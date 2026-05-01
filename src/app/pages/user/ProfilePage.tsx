@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { useApp } from '../../context/AppContext';
-import { User, Mail, Phone, Lock, Save } from 'lucide-react';
+import { User, Mail, Phone, Lock, Save, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { validateCommonEmailDomain } from '../../utils/emailValidation';
+import { validatePhone12to13Digits } from '../../utils/phoneValidation';
 
 export const ProfilePage: React.FC = () => {
   const { currentUser, updateProfile, updatePassword } = useApp();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [profileData, setProfileData] = useState({
     name: currentUser?.name || '',
@@ -18,18 +22,43 @@ export const ProfilePage: React.FC = () => {
     phone: currentUser?.phone || '',
   });
 
+  useEffect(() => {
+    if (isEditingProfile) return;
+    setProfileData({
+      name: currentUser?.name || '',
+      email: currentUser?.email || '',
+      phone: currentUser?.phone || '',
+    });
+  }, [currentUser, isEditingProfile]);
+
   const [passwordData, setPasswordData] = useState({
     newPassword: '',
     confirmPassword: '',
   });
 
-  const handleSaveProfile = () => {
-    updateProfile(profileData);
-    setIsEditingProfile(false);
-    toast.success('Profil berhasil diperbarui! ✓');
+  const handleSaveProfile = async () => {
+    const validation = validateCommonEmailDomain(profileData.email);
+    if (!validation.ok) {
+      toast.error(validation.message);
+      return;
+    }
+
+    const phoneValidation = validatePhone12to13Digits(profileData.phone);
+    if (!phoneValidation.ok) {
+      toast.error(phoneValidation.message);
+      return;
+    }
+
+    const result = await updateProfile({ ...profileData, phone: phoneValidation.normalizedPhone });
+    if (result.ok) {
+      setIsEditingProfile(false);
+      toast.success('Profil berhasil diperbarui! ✓');
+      return;
+    }
+    toast.error(result.message || 'Gagal memperbarui profil.');
   };
 
-  const handleSavePassword = () => {
+  const handleSavePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error('Password tidak sama!');
       return;
@@ -38,14 +67,18 @@ export const ProfilePage: React.FC = () => {
       toast.error('Password minimal 6 karakter!');
       return;
     }
-    updatePassword(passwordData.newPassword);
-    setPasswordData({ newPassword: '', confirmPassword: '' });
-    setIsEditingPassword(false);
-    toast.success('Password berhasil diubah! 🔒');
+    const result = await updatePassword(passwordData.newPassword);
+    if (result.ok) {
+      setPasswordData({ newPassword: '', confirmPassword: '' });
+      setIsEditingPassword(false);
+      toast.success('Password berhasil diubah! 🔒');
+      return;
+    }
+    toast.error(result.message || 'Gagal mengubah password.');
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Profil Saya</h1>
         <p className="text-gray-600">Kelola informasi akun dan keamananmu</p>
@@ -162,26 +195,50 @@ export const ProfilePage: React.FC = () => {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="newPassword">Password Baru</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                    placeholder="Minimal 6 karakter"
-                    className="border-2"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="newPassword"
+                      type={showNewPassword ? 'text' : 'password'}
+                      value={passwordData.newPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                      placeholder="Minimal 6 karakter"
+                      className="border-2 pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowNewPassword((v) => !v)}
+                      aria-label={showNewPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                      className="absolute right-1 top-1/2 -translate-y-1/2"
+                    >
+                      {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Konfirmasi Password Baru</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={passwordData.confirmPassword}
-                    onChange={(e) => setPasswordData({ ...profileData, confirmPassword: e.target.value })}
-                    placeholder="Masukkan password yang sama"
-                    className="border-2"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                      placeholder="Masukkan password yang sama"
+                      className="border-2 pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      aria-label={showConfirmPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                      className="absolute right-1 top-1/2 -translate-y-1/2"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
                 </div>
               </div>
 

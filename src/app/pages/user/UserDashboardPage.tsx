@@ -1,18 +1,50 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { useApp } from '../../context/AppContext';
 import { FileText, Clock, TrendingUp, ChevronRight } from 'lucide-react';
+import { RecommendationList } from '../../components/intervention/RecommendationList';
+import { BundleModal } from '../../components/intervention/BundleModal';
+import { useInterventionPackages } from '../../hooks/useInterventionPackages';
 
 interface UserDashboardPageProps {
   onNavigate: (page: string) => void;
 }
 
 export const UserDashboardPage: React.FC<UserDashboardPageProps> = ({ onNavigate }) => {
-  const { currentUser, diagnosisResults } = useApp();
+  const { currentUser, diagnosisResults, fetchDiagnosisResults } = useApp();
+  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    fetchDiagnosisResults(currentUser.id).catch(() => {
+      // errors (if any) are handled/toasted elsewhere when needed
+    });
+  }, [currentUser?.id]);
   
   const userResults = diagnosisResults.filter(r => r.userId === currentUser?.id);
   const latestResult = userResults[userResults.length - 1];
+
+  const latestCfResults = latestResult?.results ?? [];
+
+  const getRiskFromPercentage = (percentage: number) => {
+    if (percentage <= 33) return 'Tidak Terindikasi';
+    if (percentage <= 60) return 'Ringan';
+    if (percentage <= 82) return 'Sedang';
+    return 'Berat';
+  };
+
+  const shouldShowPackages = latestCfResults.some((r) => {
+    const risk = getRiskFromPercentage(Number(r?.percentage ?? 0));
+    return risk === 'Sedang' || risk === 'Berat';
+  });
+
+  const { packages: interventionPackages, loading: isLoadingPackages, error: packagesError } = useInterventionPackages(
+    latestCfResults,
+    { enabled: Boolean(latestResult) && shouldShowPackages }
+  );
+
+  const selectedPackage = interventionPackages.find((p) => p.id === selectedPackageId) ?? null;
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
@@ -30,14 +62,14 @@ export const UserDashboardPage: React.FC<UserDashboardPageProps> = ({ onNavigate
   };
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Welcome */}
       <div>
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
           Halo, {currentUser?.name}! 👋
         </h1>
         <p className="text-gray-600">
-          Selamat datang kembali. Bagaimana perasaanmu hari ini?
+          Selamat datang. Bagaimana perasaanmu hari ini?
         </p>
       </div>
 
@@ -144,38 +176,12 @@ export const UserDashboardPage: React.FC<UserDashboardPageProps> = ({ onNavigate
         </CardContent>
       </Card>
 
-      {/* Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-2">
-          <CardContent className="p-6 text-center space-y-3">
-            <div className="text-3xl">🛡️</div>
-            <h4 className="font-semibold text-gray-800">Privasi Terjaga</h4>
-            <p className="text-sm text-gray-600">
-              Data kamu aman dan terjaga kerahasiaannya
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2">
-          <CardContent className="p-6 text-center space-y-3">
-            <div className="text-3xl">💙</div>
-            <h4 className="font-semibold text-gray-800">Ruang Aman</h4>
-            <p className="text-sm text-gray-600">
-              Bebas dari penilaian, penuh dengan dukungan
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2">
-          <CardContent className="p-6 text-center space-y-3">
-            <div className="text-3xl">✨</div>
-            <h4 className="font-semibold text-gray-800">Rekomendasi Personal</h4>
-            <p className="text-sm text-gray-600">
-              Dapatkan panduan yang sesuai dengan kebutuhanmu
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <BundleModal
+        selectedPackage={selectedPackage}
+        onClose={() => setSelectedPackageId(null)}
+        onNavigate={onNavigate}
+        from="user-dashboard"
+      />
     </div>
   );
 };

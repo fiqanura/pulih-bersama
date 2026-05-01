@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { CircleCheck, TrendingUp, Save, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { useApp } from '../../context/AppContext';
+import { RecommendationList } from '../../components/intervention/RecommendationList';
+import { BundleModal } from '../../components/intervention/BundleModal';
+import { useInterventionPackages } from '../../hooks/useInterventionPackages';
 
 // Definisi interface agar sesuai dengan output calculateFinalCF
 interface CFResult {
@@ -14,16 +16,72 @@ interface CFResult {
 
 interface DiagnosisResultPageProps {
   result: CFResult[]; // Ini adalah hasil array dari calculateFinalCF
-  onSave: () => void;
+  onSave: () => void | Promise<void>;
   onNavigate: (page: string) => void;
 }
 
 export const DiagnosisResultPage: React.FC<DiagnosisResultPageProps> = ({ result, onSave, onNavigate }) => {
-  const { recommendations } = useApp();
+  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   
-  if (!result || result.length === 0) {
+  const safeResult = Array.isArray(result) ? result : [];
+
+  // 1. Identifikasi Hasil Tertinggi (Dominan)
+  const dominant = safeResult[0]; // Karena sudah di-sort descending di fungsi hitung
+
+  // 2. Tentukan Klasifikasi Risiko berdasarkan Tabel 3.4
+  const getRiskDetail = (percentage: number) => {
+    if (percentage <= 33) return { 
+      level: 'Tidak Terindikasi', 
+      bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200',
+      bar: 'bg-green-500',
+      desc: 'Kondisi stabil, tidak ditemukan gejala signifikan.'
+    };
+    if (percentage <= 60) return { 
+      level: 'Ringan', 
+      bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200',
+      bar: 'bg-blue-500',
+      desc: 'Terdapat indikasi gangguan minor, disarankan monitoring mandiri.'
+    };
+    if (percentage <= 82) return { 
+      level: 'Sedang', 
+      bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-200',
+      bar: 'bg-yellow-500',
+      desc: 'Gangguan cukup jelas, membutuhkan perhatian atau konseling.'
+    };
+    return { 
+      level: 'Berat', 
+      bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200',
+      bar: 'bg-red-500',
+      desc: 'Risiko tinggi, sangat disarankan konsultasi ke profesional/psikolog.'
+    };
+  };
+
+  const overallRisk = dominant ? getRiskDetail(dominant.percentage) : getRiskDetail(0);
+
+  const adminSystemWhatsAppNumber = '6282131704701';
+  const adminSystemWhatsAppUrl = `https://wa.me/${adminSystemWhatsAppNumber}?text=${encodeURIComponent(
+    'Halo Admin Sistem, saya membutuhkan bantuan/dukungan terkait hasil diagnosis di aplikasi Pulih Bersama.'
+  )}`;
+
+  // Tampilkan rekomendasi untuk SEMUA kategori yang masuk level Sedang/Berat,
+  // supaya konten dari DB tetap muncul meskipun kategori dominan tidak punya rekomendasi.
+  const categoriesNeedingRecs = safeResult
+    .map((item) => ({ item, risk: getRiskDetail(item.percentage).level }))
+    .filter(({ risk }) => risk === 'Sedang' || risk === 'Berat');
+
+  const shouldShowRecommendations = categoriesNeedingRecs.length > 0;
+  const shouldShowAdminWhatsAppButton = categoriesNeedingRecs.length > 0;
+
+  const { packages: interventionPackages, loading: isLoadingPackages, error: packagesError } = useInterventionPackages(
+    safeResult,
+    { enabled: safeResult.length > 0 }
+  );
+
+  const selectedPackage = interventionPackages.find((p) => p.id === selectedPackageId) ?? null;
+
+  if (!safeResult.length) {
     return (
-      <div className="p-8 max-w-5xl mx-auto text-center">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto text-center">
         <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
         <h1 className="text-2xl font-bold text-gray-800">Data Tidak Tersedia</h1>
         <p className="text-gray-500">Hasil diagnosis tidak ditemukan. Silakan coba lagi.</p>
@@ -32,44 +90,8 @@ export const DiagnosisResultPage: React.FC<DiagnosisResultPageProps> = ({ result
     );
   }
 
-  // 1. Identifikasi Hasil Tertinggi (Dominan)
-  const dominant = result[0]; // Karena sudah di-sort descending di fungsi hitung
-
-  // 2. Tentukan Klasifikasi Risiko berdasarkan Tabel 3.4
-  const getRiskDetail = (percentage: number) => {
-    if (percentage <= 25) return { 
-      level: 'Tidak Terindikasi', 
-      bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200',
-      desc: 'Kondisi stabil, tidak ditemukan gejala signifikan.'
-    };
-    if (percentage <= 50) return { 
-      level: 'Ringan', 
-      bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200',
-      desc: 'Terdapat indikasi gangguan minor, disarankan monitoring mandiri.'
-    };
-    if (percentage <= 75) return { 
-      level: 'Sedang', 
-      bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-200',
-      desc: 'Gangguan cukup jelas, membutuhkan perhatian atau konseling.'
-    };
-    return { 
-      level: 'Berat', 
-      bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200',
-      desc: 'Risiko tinggi, sangat disarankan konsultasi ke profesional/psikolog.'
-    };
-  };
-
-  const overallRisk = getRiskDetail(dominant.percentage);
-
-  const shouldShowRecommendations = overallRisk.level === 'Sedang' || overallRisk.level === 'Berat';
-  const matchedRecommendations = shouldShowRecommendations
-    ? recommendations.filter(
-        (r) => r.category === dominant.category && r.risk_level === overallRisk.level
-      )
-    : [];
-
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-700">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-700">
       
       {/* Header */}
       <div className="text-center space-y-4">
@@ -105,8 +127,8 @@ export const DiagnosisResultPage: React.FC<DiagnosisResultPageProps> = ({ result
         <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
           <TrendingUp className="text-blue-500" /> Rincian Skor Per Kategori
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {result.map((item, idx) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {safeResult.map((item, idx) => {
             const risk = getRiskDetail(item.percentage);
             return (
               <Card key={idx} className={`transition-all hover:shadow-md ${idx === 0 ? 'ring-2 ring-blue-400' : ''}`}>
@@ -118,7 +140,7 @@ export const DiagnosisResultPage: React.FC<DiagnosisResultPageProps> = ({ result
                   <div className="text-right">
                     <p className="text-2xl font-bold text-gray-800">{item.percentage}%</p>
                     <div className="w-24 h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
-                      <div className={`h-full ${risk.bg.replace('100', '500')}`} style={{ width: `${item.percentage}%` }} />
+                      <div className={`h-full ${risk.bar}`} style={{ width: `${item.percentage}%` }} />
                     </div>
                   </div>
                 </CardContent>
@@ -136,17 +158,23 @@ export const DiagnosisResultPage: React.FC<DiagnosisResultPageProps> = ({ result
             <h4 className="font-bold italic">Peringatan Penting</h4>
           </div>
           <p className="text-sm text-gray-700 leading-relaxed">
-            Hasil ini didasarkan pada perhitungan algoritma sistem "Pulih Bersama" dan bukan pengganti diagnosa medis profesional. 
-            Jika skor menunjukkan tingkat <strong>Sedang</strong> atau <strong>Berat</strong>, kami sangat menyarankan untuk menghubungi:
+            Hasil ini didasarkan pada perhitungan algoritma sistem "Pulih Bersama" dan bukan pengganti diagnosa medis profesional.
+            <br />
+            Jika skor menunjukkan tingkat <strong>Sedang</strong> atau <strong>Berat</strong>, kami sangat menyarankan Anda untuk menjangkau bantuan profesional.
+            <br />
+            <br />
+            Silakan hubungi Admin Sistem di bawah ini untuk mendapatkan panduan atau informasi kontak psikolog terdekat.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-            <div className="bg-white p-3 rounded border border-yellow-100">
-              📞 <strong>Hotline 119 Ext 8</strong> (Layanan 24 Jam)
+
+          {shouldShowAdminWhatsAppButton && (
+            <div className="pt-2">
+              <Button asChild className="w-full sm:w-auto">
+                <a href={adminSystemWhatsAppUrl} target="_blank" rel="noreferrer">
+                  Hubungi WhatsApp Admin Sistem
+                </a>
+              </Button>
             </div>
-            <div className="bg-white p-3 rounded border border-yellow-100">
-              📞 <strong>0811-10-500-567</strong> (Whatsapp Kemenkes RI)
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
@@ -154,24 +182,23 @@ export const DiagnosisResultPage: React.FC<DiagnosisResultPageProps> = ({ result
       {shouldShowRecommendations && (
         <Card className="border-2">
           <CardContent className="p-6 space-y-4">
-            <h4 className="text-xl font-semibold text-gray-800">Rekomendasi</h4>
-            {matchedRecommendations.length === 0 ? (
-              <p className="text-sm text-gray-500">Belum ada rekomendasi untuk kategori ini.</p>
-            ) : (
-              <div className="space-y-3">
-                {matchedRecommendations.map((rec) => (
-                  <div key={rec.id} className="p-4 bg-gray-50 rounded-lg">
-                    <p className="font-medium text-gray-800">{rec.title}</p>
-                    <a className="text-sm text-[#1e3a8a] underline" href={rec.link} target="_blank" rel="noreferrer">
-                      Buka {rec.type}
-                    </a>
-                  </div>
-                ))}
-              </div>
-            )}
+            <h4 className="text-xl font-semibold text-gray-800">Rekomendasi Pemulihan</h4>
+            <RecommendationList
+              packages={interventionPackages}
+              loading={isLoadingPackages}
+              error={packagesError}
+              onOpenPackage={setSelectedPackageId}
+            />
           </CardContent>
         </Card>
       )}
+
+      <BundleModal
+        selectedPackage={selectedPackage}
+        onClose={() => setSelectedPackageId(null)}
+        onNavigate={onNavigate}
+        from="diagnosis-result"
+      />
 
       {/* ACTIONS */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
@@ -184,8 +211,10 @@ export const DiagnosisResultPage: React.FC<DiagnosisResultPageProps> = ({ result
         </Button>
         <Button
           onClick={() => {
-            onSave();
-            toast.success('Hasil berhasil disimpan ke riwayat!');
+            Promise.resolve(onSave()).catch(() => {
+              // ignore: navigation/refresh failures are non-fatal here
+            });
+            toast.success('Hasil sudah tersimpan otomatis ke riwayat.');
           }}
           className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg px-8"
         >

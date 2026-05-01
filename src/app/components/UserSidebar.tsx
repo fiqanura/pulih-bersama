@@ -1,7 +1,8 @@
 import React from 'react';
-import { House, FileText, Clock, User, LogOut, Heart } from 'lucide-react';
+import { House, FileText, Clock, User, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
 import { useApp } from '../context/AppContext';
+import logo from '../../assets/logo_pulih_bersama.png';
 
 interface UserSidebarProps {
   currentPage: string;
@@ -19,12 +20,12 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({ currentPage, onNavigat
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-border h-screen sticky top-0 flex flex-col">
+    <div className="bg-white border-r border-border h-full flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-[#93c5fd] to-[#ddd6fe] rounded-full flex items-center justify-center">
-            <Heart className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm overflow-hidden border border-[#93c5fd]/30">
+            <img src={logo} alt="Logo Pulih Bersama" className="w-full h-full object-contain p-1" />
           </div>
           <div>
             <h2 className="font-semibold text-gray-800">Pulih Bersama</h2>
@@ -78,6 +79,6 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({ currentPage, onNavigat
           Keluar
         </Button>
       </div>
-    </aside>
+    </div>
   );
 };

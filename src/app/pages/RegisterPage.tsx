@@ -3,8 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Heart, User, Mail, Phone, Lock, Loader, Eye, EyeOff, CircleCheck } from 'lucide-react';
+import { User, Mail, Phone, Lock, Loader, Eye, EyeOff, CircleCheck } from 'lucide-react';
 import { toast } from 'sonner';
+import logo from '../../assets/logo_pulih_bersama.png';
+import { validateCommonEmailDomain } from '../utils/emailValidation';
+import { validatePhone12to13Digits } from '../utils/phoneValidation';
 
 interface RegisterPageProps {
   onNavigate: (page: string) => void;
@@ -26,16 +29,12 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) newErrors.name = 'Nama lengkap harus diisi';
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email harus diisi';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Format email belum sesuai';
-    }
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Nomor telepon harus diisi';
-    } else if (!/^[0-9]{10,13}$/.test(formData.phone.replace(/\s/g, ''))) {
-      newErrors.phone = 'Nomor telepon harus 10-13 digit';
-    }
+
+    const emailValidation = validateCommonEmailDomain(formData.email);
+    if (!emailValidation.ok) newErrors.email = emailValidation.message;
+
+    const phoneValidation = validatePhone12to13Digits(formData.phone);
+    if (!phoneValidation.ok) newErrors.phone = phoneValidation.message;
     if (!formData.password) {
       newErrors.password = 'Password harus diisi';
     } else if (formData.password.length < 6) {
@@ -65,7 +64,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          phone: formData.phone,
+          phone: formData.phone.replace(/\s/g, ''),
           password: formData.password,
         }),
       });
@@ -73,20 +72,28 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('Pendaftaran berhasil! Silakan login 🎉');
+        toast.success('Pendaftaran berhasil! Silakan login');
         setTimeout(() => {
           onNavigate('login');
         }, 1500);
       } else {
-        // Menampilkan pesan error dari Laravel (misal email sudah ada)
-        if (data.email) {
-          toast.error('Email sudah terdaftar, gunakan email lain.');
+        // Menampilkan pesan error dari Laravel (misal email/phone sudah ada)
+        const errorsObj: any = data?.errors ?? data;
+        const emailError =
+          Array.isArray(errorsObj?.email) ? errorsObj.email[0] : errorsObj?.email;
+        const phoneError =
+          Array.isArray(errorsObj?.phone) ? errorsObj.phone[0] : errorsObj?.phone;
+
+        if (emailError) {
+          toast.error(String(emailError));
+        } else if (phoneError) {
+          toast.error(String(phoneError));
         } else {
-          toast.error(data.message || 'Terjadi kesalahan pada pendaftaran.');
+          toast.error(data?.message || 'Terjadi kesalahan pada pendaftaran.');
         }
       }
     } catch (err) {
-      toast.error('Gagal terhubung ke server. Pastikan Backend Laravel menyala!');
+      toast.error('Gagal terhubung ke server!');
     } finally {
       setIsLoading(false);
     }
@@ -103,8 +110,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
     <div className="min-h-screen bg-gradient-to-br from-[#93c5fd]/20 via-[#ddd6fe]/20 to-[#86efac]/20 py-16 px-4 flex items-center justify-center">
       <Card className="w-full max-w-md border-2 shadow-lg">
         <CardHeader className="text-center space-y-4 pb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#93c5fd] to-[#ddd6fe] rounded-full mx-auto">
-            <Heart className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 mx-auto">
+            <img src={logo} alt="Logo Pulih Bersama" className="w-full h-full object-contain" />
           </div>
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-[#1e3a8a] to-[#5b21b6] bg-clip-text text-transparent">
             Bergabung dengan Pulih Bersama
@@ -123,7 +130,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
                 id="name"
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
-                placeholder="Nama lengkap"
+                placeholder="Nama Lengkap"
                 className={`border-2 ${errors.name ? 'border-red-300' : 'focus:border-[#93c5fd]'}`}
               />
               {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
@@ -154,7 +161,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
-                placeholder="nama@email.com"
+                placeholder="nama@gmail.com"
                 className={`border-2 ${errors.email ? 'border-red-300' : 'focus:border-[#93c5fd]'}`}
               />
               {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}

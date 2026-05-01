@@ -133,21 +133,25 @@ export const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ articleId, onNav
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Buka Artikel Asli
+                      Baca Sumber Asli
                     </a>
                   </Button>
                 </div>
               )}
             </div>
 
-            <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-4">
-              {/* Render isi konten dari database */}
+            <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed prose-p:my-0 space-y-4">
+              {/* Render isi konten dari database (ikuti format saat edit/textarea) */}
               {String(article.content || '')
-                .split('\n\n')
+                .replace(/\r\n/g, '\n')
+                .split(/\n{2,}/)
+                .map((block: string) => block.trim())
                 .filter(Boolean)
-                .map((paragraph: string, index: number) => (
-                <p key={index}>{paragraph}</p>
-              ))}
+                .map((block: string, index: number) => (
+                  <p key={index} className="whitespace-pre-line">
+                    {block}
+                  </p>
+                ))}
             </div>
           </CardContent>
         </Card>

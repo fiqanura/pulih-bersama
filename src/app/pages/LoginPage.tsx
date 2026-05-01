@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Heart, Mail, Lock, Loader, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Loader, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useApp } from '../context/AppContext';
+import logo from '../../assets/logo_pulih_bersama.png';
 
 interface LoginPageProps {
   onNavigate: (page: string) => void;
@@ -38,7 +39,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
         }
       }, 1000);
     } else {
-      setError('Email atau password tidak sesuai.');
+      setError('Email atau password salah.');
     }
 
     setIsLoading(false);
@@ -49,8 +50,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
       <Card className="w-full max-w-md border-2 shadow-lg">
         <CardHeader className="text-center space-y-4 pb-8">
           {/* Logo Lingkaran (Bisa diganti dengan img logo seperti di Footer) */}
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#93c5fd] to-[#ddd6fe] rounded-full mx-auto">
-            <Heart className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 mx-auto">
+            <img src={logo} alt="Logo Pulih Bersama" className="w-full h-full object-contain" />
           </div>
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-[#1e3a8a] to-[#5b21b6] bg-clip-text text-transparent">
             Masuk ke Pulih Bersama
@@ -69,7 +70,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="nama@email.com"
+                placeholder="nama@gmail.com"
                 required
                 className="border-2 focus:border-[#93c5fd]"
                 disabled={isLoading}
@@ -120,7 +121,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
 
             {/* Bagian Demo Login disingkirkan atau disesuaikan dengan akun asli */}
             <div className="pt-4 border-t border-gray-200 text-center">
-               <p className="text-[10px] text-gray-400">Pastikan email & password sudah terdaftar di sistem.</p>
+               <p className="text-[10px] text-gray-400">Pastikan email & password sudah terdaftar.</p>
             </div>
           </form>
         </CardContent>

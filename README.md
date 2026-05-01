@@ -1,7 +1,7 @@
 
-  # Mental Health Assessment Website
+  # Pulih Bersama
 
-  This is a code bundle for Mental Health Assessment Website. The original project is available at https://www.figma.com/design/fEQUKLM4VQdepOBk7eKq3P/Mental-Health-Assessment-Website.
+  This is a code bundle for Pulih Bersama. The original project is available at https://www.figma.com/design/fEQUKLM4VQdepOBk7eKq3P/Mental-Health-Assessment-Website.
 
   ## Running the code
 

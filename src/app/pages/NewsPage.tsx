@@ -52,14 +52,14 @@ export const NewsPage: React.FC<NewsPageProps> = ({ onNavigate }) => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#93c5fd]/5 to-[#ddd6fe]/5 py-16 px-4">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">Artikel & Berita</h1>
+          <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">Artikel</h1>
           <Card className="border-2">
             <CardContent className="p-16 text-center space-y-4">
               <div className="w-20 h-20 mx-auto bg-gradient-to-br from-[#93c5fd]/20 to-[#ddd6fe]/20 rounded-full flex items-center justify-center">
                 <Calendar className="w-10 h-10 text-gray-400" />
               </div>
               <h3 className="text-xl font-semibold text-gray-700">Belum Ada Artikel</h3>
-              <p className="text-gray-500">Gudang database masih kosong. Silakan isi melalui phpMyAdmin!</p>
+              <p className="text-gray-500">Artikel masih kosong</p>
             </CardContent>
           </Card>
         </div>
@@ -72,10 +72,10 @@ export const NewsPage: React.FC<NewsPageProps> = ({ onNavigate }) => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[#1e3a8a] to-[#5b21b6] bg-clip-text text-transparent mb-4">
-            Artikel & Berita
+            Artikel
           </h1>
           <p className="text-gray-600">
-            Temukan informasi dan tips seputar kesehatan mental dari database Pulih Bersama
+            Temukan informasi seputar kesehatan mental dari Pulih Bersama
           </p>
         </div>
 

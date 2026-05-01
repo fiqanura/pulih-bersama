@@ -1,17 +1,17 @@
 export const getRiskLevel = (percentage: number) => {
-  if (percentage <= 25) {
+  if (percentage <= 33) {
     return {
       level: "Tidak Terindikasi",
       color: "text-green-600",
       desc: "Kondisi stabil, tidak ditemukan gejala signifikan."
     };
-  } else if (percentage <= 50) {
+  } else if (percentage <= 60) {
     return {
       level: "Ringan",
       color: "text-blue-600",
       desc: "Terdapat indikasi gangguan minor, disarankan monitoring mandiri."
     };
-  } else if (percentage <= 75) {
+  } else if (percentage <= 82) {
     return {
       level: "Sedang",
       color: "text-yellow-600",

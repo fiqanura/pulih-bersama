@@ -4,8 +4,9 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
-import { Plus, Pencil, Trash, Save, X } from 'lucide-react';
+import { Plus, Pencil, Trash, Save, X, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import { ImageWithFallback } from '../../components/figma/ImageWithFallback';
 import {
   Table,
   TableBody,
@@ -26,6 +27,7 @@ interface Article {
   title: string;
   content: string;
   image_url?: string;
+  thumbnail_url?: string;
   url?: string;
   link?: string;
   article_url?: string;
@@ -36,15 +38,50 @@ interface Article {
 
 export const ArticleManagementPage: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string>('');
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     category: '',
     articleUrl: '',
   });
+
+  const BASE_URL = 'http://127.0.0.1:8000';
+
+  const toAbsoluteBackendUrl = (raw: unknown): string => {
+    let url = String(raw ?? '').trim();
+    if (!url) return '';
+
+    url = url.replace(/\\/g, '/');
+    if (/^(data:|blob:)/i.test(url)) return url;
+    if (/^https?:\/\//i.test(url)) return url;
+    if (url.startsWith('public/storage/')) url = url.replace(/^public\//, '');
+    if (url.startsWith('storage/')) return `${BASE_URL}/${url}`;
+    if (url.startsWith('/storage/')) return `${BASE_URL}${url}`;
+    if (url.startsWith('/')) return `${BASE_URL}${url}`;
+    return `${BASE_URL}/${url}`;
+  };
+
+  const revokeIfBlob = (url: string) => {
+    if (url && url.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(url);
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      revokeIfBlob(thumbnailPreviewUrl);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const normalizeArticles = (input: unknown): Article[] => {
     if (Array.isArray(input)) return input as Article[];
@@ -73,6 +110,8 @@ export const ArticleManagementPage: React.FC = () => {
   }, []);
 
   const handleOpenDialog = (article?: Article) => {
+    revokeIfBlob(thumbnailPreviewUrl);
+
     if (article) {
       setEditingArticle(article);
       setFormData({
@@ -81,6 +120,9 @@ export const ArticleManagementPage: React.FC = () => {
         category: article.category,
         articleUrl: (article.url || article.link || article.article_url || '') as string,
       });
+
+      const existingThumb = article.image_url || article.thumbnail_url || '';
+      setThumbnailPreviewUrl(toAbsoluteBackendUrl(existingThumb));
     } else {
       setEditingArticle(null);
       setFormData({
@@ -89,6 +131,7 @@ export const ArticleManagementPage: React.FC = () => {
         category: '',
         articleUrl: '',
       });
+      setThumbnailPreviewUrl('');
     }
     setThumbnailFile(null);
     setIsDialogOpen(true);
@@ -182,12 +225,19 @@ export const ArticleManagementPage: React.FC = () => {
     }
   };
 
+  const filteredArticles = articles.filter((article) => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    const haystack = `${article.title} ${article.category}`.toLowerCase();
+    return haystack.includes(q);
+  });
+
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Manajemen Berita</h1>
-          <p className="text-gray-600">Kelola berita dan artikel</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Manajemen Artikel</h1>
+          <p className="text-gray-600">Kelola artikel kesehatan mental</p>
         </div>
         <Button
           onClick={() => handleOpenDialog()}
@@ -198,11 +248,23 @@ export const ArticleManagementPage: React.FC = () => {
         </Button>
       </div>
 
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <Input
+          type="text"
+          placeholder="Cari judul atau kategori..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10 border-2 focus:border-[#93c5fd]"
+        />
+      </div>
+
       <Card className="border-2">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12 text-center">No</TableHead>
                 <TableHead>Judul</TableHead>
                 <TableHead>Kategori</TableHead>
                 <TableHead>Tanggal</TableHead>
@@ -210,36 +272,41 @@ export const ArticleManagementPage: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {articles.map((article) => (
-                <TableRow key={article.id}>
-                  <TableCell className="font-medium max-w-md">
-                    <div className="line-clamp-1">{article.title}</div>
-                  </TableCell>
-                  <TableCell>{article.category}</TableCell>
-                  <TableCell>
-                    {new Date(article.date || article.created_at || Date.now()).toLocaleDateString('id-ID')}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleOpenDialog(article)}
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDelete(article.id)}
-                        className="text-red-600 hover:bg-red-50"
-                      >
-                        <Trash className="w-4 h-4" />
-                      </Button>
-                    </div>
+              {filteredArticles.length > 0 ? (
+                filteredArticles.map((article, index) => (
+                  <TableRow key={article.id}>
+                    <TableCell className="text-center text-gray-600">{index + 1}</TableCell>
+                    <TableCell className="font-medium max-w-md whitespace-normal break-words">
+                      {article.title}
+                    </TableCell>
+                    <TableCell>{article.category}</TableCell>
+                    <TableCell>
+                      {new Date(article.date || article.created_at || Date.now()).toLocaleDateString('id-ID')}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex gap-2 justify-end">
+                        <Button size="sm" variant="outline" onClick={() => handleOpenDialog(article)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDelete(article.id)}
+                          className="text-red-600 hover:bg-red-50"
+                        >
+                          <Trash className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-10 text-gray-400">
+                    Tidak ada artikel yang cocok dengan pencarian.
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -288,10 +355,32 @@ export const ArticleManagementPage: React.FC = () => {
             </div>
             <div className="space-y-2">
               <Label>Upload Thumbnail</Label>
+              {thumbnailPreviewUrl ? (
+                <div className="w-64 aspect-video rounded-md overflow-hidden border bg-gray-100">
+                  <ImageWithFallback
+                    src={thumbnailPreviewUrl}
+                    alt="Preview thumbnail"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : null}
               <Input
                 type="file"
                 accept="image/*"
-                onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)}
+                onChange={(e) => {
+                  const file = e.target.files?.[0] ?? null;
+                  setThumbnailFile(file);
+
+                  revokeIfBlob(thumbnailPreviewUrl);
+
+                  if (file) {
+                    const url = URL.createObjectURL(file);
+                    setThumbnailPreviewUrl(url);
+                  } else {
+                    const existingThumb = editingArticle?.image_url || editingArticle?.thumbnail_url || '';
+                    setThumbnailPreviewUrl(toAbsoluteBackendUrl(existingThumb));
+                  }
+                }}
               />
             </div>
             <div className="flex gap-2 justify-end pt-4">

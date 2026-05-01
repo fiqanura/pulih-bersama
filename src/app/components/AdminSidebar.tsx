@@ -1,7 +1,8 @@
 import React from 'react';
-import { House, Clock, FileText, Activity, Lightbulb, Users, LogOut, Heart, Shield } from 'lucide-react';
+import { House, Clock, FileText, Activity, Lightbulb, Users, LogOut, Shield } from 'lucide-react';
 import { Button } from './ui/button';
 import { useApp } from '../context/AppContext';
+import logo from '../../assets/logo_pulih_bersama.png';
 
 interface AdminSidebarProps {
   currentPage: string;
@@ -14,19 +15,19 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentPage, onNavig
   const menuItems = [
     { icon: House, label: 'Dashboard', value: 'admin-dashboard' },
     { icon: Clock, label: 'Riwayat Pengguna', value: 'admin-user-history' },
-    { icon: FileText, label: 'Manajemen Berita', value: 'admin-articles' },
+    { icon: FileText, label: 'Manajemen Artikel', value: 'admin-articles' },
     { icon: Activity, label: 'Manajemen Gejala', value: 'admin-symptoms' },
     { icon: Lightbulb, label: 'Manajemen Konten', value: 'admin-recommendations' },
     { icon: Users, label: 'Manajemen User', value: 'admin-users' },
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-border h-screen sticky top-0 flex flex-col">
+    <div className="bg-white border-r border-border h-full flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-[#93c5fd] to-[#ddd6fe] rounded-full flex items-center justify-center">
-            <Heart className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm overflow-hidden border border-[#93c5fd]/30">
+            <img src={logo} alt="Logo Pulih Bersama" className="w-full h-full object-contain p-1" />
           </div>
           <div>
             <h2 className="font-semibold text-gray-800">Pulih Bersama</h2>
@@ -80,6 +81,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentPage, onNavig
           Keluar
         </Button>
       </div>
-    </aside>
+    </div>
   );
 };

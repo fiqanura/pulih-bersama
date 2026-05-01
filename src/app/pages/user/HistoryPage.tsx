@@ -1,16 +1,68 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { useApp, DiagnosisResult } from '../../context/AppContext';
+import { ImageWithFallback } from '../../components/figma/ImageWithFallback';
 import { Clock, Calendar, Eye, TrendingUp } from 'lucide-react';
+import { Badge } from '../../components/ui/badge';
+import { RecommendationList } from '../../components/intervention/RecommendationList';
+import { BundleModal } from '../../components/intervention/BundleModal';
+import { useInterventionPackages } from '../../hooks/useInterventionPackages';
 
 interface HistoryPageProps {
   onNavigate: (page: string) => void;
 }
 
 export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
-  const { currentUser, diagnosisResults } = useApp();
+  const { currentUser, diagnosisResults, fetchDiagnosisResults } = useApp();
   const [selectedResult, setSelectedResult] = useState<DiagnosisResult | null>(null);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
+
+  const { packages: interventionPackages, loading: isLoadingPackages, error: packagesError } = useInterventionPackages(
+    selectedResult?.results ?? [],
+    { enabled: Boolean(selectedResult) }
+  );
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    setIsLoadingHistory(true);
+    fetchDiagnosisResults(currentUser.id)
+      .catch(() => {
+        // errors are already logged/toasted elsewhere when needed
+      })
+      .finally(() => setIsLoadingHistory(false));
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    // Restore the previous detailed view (and package modal) after navigating back from a detail page.
+    const raw = sessionStorage.getItem('pb:returnState');
+    if (!raw) return;
+    let parsed: any = null;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return;
+    }
+
+    if (!parsed || parsed.page !== 'history') return;
+    if (!currentUser?.id) return;
+
+    const contextId = String(parsed.contextId ?? '').trim();
+    const packageId = String(parsed.packageId ?? '').trim();
+    if (!contextId) {
+      sessionStorage.removeItem('pb:returnState');
+      return;
+    }
+
+    const found = diagnosisResults.find((r) => String(r.id) === contextId && r.userId === currentUser.id);
+    if (!found) return; // wait for results to load
+
+    setSelectedResult(found);
+    setSelectedPackageId(packageId || null);
+    sessionStorage.removeItem('pb:returnState');
+  }, [currentUser?.id, diagnosisResults]);
 
   const userResults = diagnosisResults
     .filter(r => r.userId === currentUser?.id)
@@ -32,11 +84,16 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
   };
 
   if (selectedResult) {
+    const selectedPackage = interventionPackages.find((p) => p.id === selectedPackageId) ?? null;
+
     return (
-      <div className="p-8 max-w-5xl mx-auto space-y-6">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
         <Button
           variant="ghost"
-          onClick={() => setSelectedResult(null)}
+          onClick={() => {
+            setSelectedPackageId(null);
+            setSelectedResult(null);
+          }}
           className="text-[#1e3a8a] hover:text-[#93c5fd]"
         >
           ← Kembali ke Riwayat
@@ -55,7 +112,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
         </div>
 
         <Card className={`border-4 ${getRiskColor(selectedResult.overallRisk).bg}`}>
-          <CardContent className="p-8 text-center space-y-4">
+          <CardContent className="p-6 sm:p-8 text-center space-y-4">
             <div className={`inline-block px-6 py-3 rounded-full text-xl ${getRiskColor(selectedResult.overallRisk).bg} ${getRiskColor(selectedResult.overallRisk).text}`}>
               Tingkat Risiko: <strong>{selectedResult.overallRisk}</strong>
             </div>
@@ -69,15 +126,16 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Hasil per Kategori</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {selectedResult.results.map((item, idx) => {
-              const risk = item.percentage <= 25 ? 'Tidak Terindikasi' : item.percentage <= 50 ? 'Ringan' : item.percentage <= 75 ? 'Sedang' : 'Berat';
+              const risk = item.percentage <= 33 ? 'Tidak Terindikasi' : item.percentage <= 60 ? 'Ringan' : item.percentage <= 82 ? 'Sedang' : 'Berat';
               const colors = getRiskColor(risk);
               return (
                 <Card key={idx} className="border-2">
-                  <CardContent className="p-6 flex items-center justify-between">
+                  <CardContent className="p-6 flex items-center justify-between gap-4">
                     <span className="text-gray-700">{item.category}</span>
-                    <span className={`px-4 py-2 rounded-lg ${colors.bg} ${colors.text}`}>
-                      {item.percentage}%
-                    </span>
+                    <div className={`px-4 py-2 rounded-lg text-right ${colors.bg} ${colors.text}`}>
+                      <div className="font-semibold">{item.percentage}%</div>
+                      <div className="text-xs leading-tight">{risk}</div>
+                    </div>
                   </CardContent>
                 </Card>
               );
@@ -86,41 +144,47 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
         </div>
 
         <Card className="border-2">
-          <CardContent className="p-8 space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800">Rekomendasi yang Diberikan</h3>
-            <div className="space-y-3">
-              {selectedResult.recommendations.length === 0 ? (
-                <p className="text-sm text-gray-500">Belum ada rekomendasi untuk hasil ini.</p>
-              ) : (
-                selectedResult.recommendations.map((rec, index) => (
-                  <div key={rec.id || index} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                    <div className="w-6 h-6 bg-[#93c5fd] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-white text-sm">{index + 1}</span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-gray-800 font-medium">{rec.title}</p>
-                      <a className="text-sm text-[#1e3a8a] underline" href={rec.link} target="_blank" rel="noreferrer">
-                        Buka {rec.type}
-                      </a>
-                    </div>
-                  </div>
-                ))
-              )}
+          <CardContent className="p-6 sm:p-8 space-y-4">
+            <h3 className="text-xl font-semibold text-gray-800">Rekomendasi Pemulihan</h3>
+            <div>
+              <RecommendationList
+                packages={interventionPackages}
+                loading={isLoadingPackages}
+                error={packagesError}
+                onOpenPackage={setSelectedPackageId}
+              />
             </div>
           </CardContent>
         </Card>
+
+        <BundleModal
+          selectedPackage={selectedPackage}
+          onClose={() => setSelectedPackageId(null)}
+          onNavigate={onNavigate}
+          from={`history:${selectedResult.id}`}
+        />
       </div>
     );
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Riwayat Diagnosis</h1>
         <p className="text-gray-600">Lihat kembali hasil tes kesehatan mental yang pernah kamu lakukan</p>
       </div>
 
-      {userResults.length === 0 ? (
+      {isLoadingHistory ? (
+        <Card className="border-2">
+          <CardContent className="p-16 text-center space-y-4">
+            <div className="w-20 h-20 mx-auto bg-gradient-to-br from-[#93c5fd]/20 to-[#ddd6fe]/20 rounded-full flex items-center justify-center">
+              <Clock className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-700">Memuat Riwayat...</h3>
+            <p className="text-gray-500 max-w-md mx-auto">Sedang mengambil data riwayat diagnosis dari database.</p>
+          </CardContent>
+        </Card>
+      ) : userResults.length === 0 ? (
         <Card className="border-2">
           <CardContent className="p-16 text-center space-y-4">
             <div className="w-20 h-20 mx-auto bg-gradient-to-br from-[#93c5fd]/20 to-[#ddd6fe]/20 rounded-full flex items-center justify-center">
@@ -169,7 +233,10 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
                     </div>
                     <Button
                       variant="outline"
-                      onClick={() => setSelectedResult(result)}
+                      onClick={() => {
+                        setSelectedPackageId(null);
+                        setSelectedResult(result);
+                      }}
                       className="border-2 border-[#93c5fd] text-[#1e3a8a] hover:bg-[#93c5fd]/10"
                     >
                       <Eye className="w-4 h-4 mr-2" />

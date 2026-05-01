@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Target, Eye, Shield } from 'lucide-react';
+import { Target, Eye, Shield } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 
 export const AboutPage: React.FC = () => {  
@@ -67,7 +67,7 @@ export const AboutPage: React.FC = () => {
                   <li>Menyediakan alat skrining kesehatan mental yang mudah diakses</li>
                   <li>Memberikan rekomendasi pemulihan yang personal</li>
                   <li>Menciptakan lingkungan digital yang aman dan empatik</li>
-                  <li>Meningkatkan awareness tentang kesehatan mental anak</li>
+                  <li>Meningkatkan awareness tentang kesehatan mental</li>
                 </ul>
               </CardContent>
             </Card>

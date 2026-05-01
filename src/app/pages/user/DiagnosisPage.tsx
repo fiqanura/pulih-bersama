@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/button';
 import { Progress } from '../../components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '../../components/ui/radio-group';
 import { Label } from '../../components/ui/label';
-import { Loader, Heart, ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Loader, ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { toast } from 'sonner';
 

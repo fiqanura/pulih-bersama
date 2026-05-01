@@ -44,15 +44,8 @@ export const Footer: React.FC = () => {
               <div className="flex items-start gap-3 text-sm">
                 <Phone className="w-5 h-5 text-[#93c5fd] flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-gray-800">Hotline Kesehatan Mental</p>
-                  <p className="text-gray-600">119 ext. 8 (24 jam)</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 text-sm">
-                <Mail className="w-5 h-5 text-[#93c5fd] flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-gray-800">WhatsApp</p>
-                  <p className="text-gray-600">0811-2609-168</p>
+                  <p className="font-medium text-gray-800">WhatsApp Admin Sistem</p>
+                  <p className="text-gray-600">+62 821-3170-4701</p>
                 </div>
               </div>
             </div>

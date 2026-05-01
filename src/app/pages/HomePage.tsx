@@ -13,7 +13,7 @@ interface HomePageProps {
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
-  // 1. Siapkan wadah untuk menampung berita dari Laravel
+  // 1. Siapkan wadah untuk menampung artikel dari Laravel
   const [dbArticles, setDbArticles] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -32,7 +32,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         const data = await res.json();
         setDbArticles(normalizeArticles(data));
       } catch (err) {
-        console.error('Gagal ambil berita dari Laravel:', err);
+        console.error('Gagal ambil artikel dari Laravel:', err);
         setDbArticles([]);
       } finally {
         setLoading(false);
@@ -42,13 +42,13 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     fetchArticles();
   }, []);
 
-  // 3. Ambil 3 berita teratas saja untuk preview
+  // 3. Ambil 3 artikel teratas saja untuk preview
   const previewArticles = dbArticles.slice(0, 3);
 
   const steps = [
     {
       icon: UserPlus,
-      title: 'Daftar',
+      title: 'Daftar Akun',
       description: 'Buat akun dengan mudah dan aman',
       color: '#93c5fd',
     },
@@ -166,15 +166,15 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Berita & Artikel
+              Artikel
             </h2>
             <p className="text-gray-600">
-              Baca berita dan artikel tentang kesehatan mental
+              Baca artikel tentang kesehatan mental
             </p>
           </div>
           
           {loading ? (
-            <div className="text-center py-10">Memuat berita dari database...</div>
+            <div className="text-center py-10">Memuat artikel dari database...</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {previewArticles.map((article: any) => (
@@ -209,7 +209,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               onClick={() => onNavigate('news')}
               className="border-[#93c5fd] text-[#1e3a8a] hover:bg-[#93c5fd]/10"
             >
-              Lihat Semua Berita
+              Lihat Semua Artikel
             </Button>
           </div>
         </div>
