@@ -29,7 +29,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
 
     if (success) {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      toast.success(`Login berhasil! Selamat datang, ${user.name} 🌟`);
+      toast.success(`Masuk berhasil! Selamat datang, ${user.name} 🌟`);
 
       setTimeout(() => {
         if (user.role === 'admin') {
@@ -39,7 +39,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
         }
       }, 1000);
     } else {
-      setError('Email atau password salah.');
+      setError('Email atau kata sandi salah.');
     }
 
     setIsLoading(false);
@@ -79,7 +79,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
 
             <div className="space-y-2">
               <Label htmlFor="password" className="flex items-center gap-2">
-                <Lock className="w-4 h-4 text-[#93c5fd]" /> Password
+                <Lock className="w-4 h-4 text-[#93c5fd]" /> Kata Sandi
               </Label>
               <div className="relative">
                 <Input
@@ -119,7 +119,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
               </button>
             </div>
 
-            {/* Bagian Demo Login disingkirkan atau disesuaikan dengan akun asli */}
+            {/* Bagian Demo masuk disingkirkan atau disesuaikan dengan akun asli */}
             <div className="pt-4 border-t border-gray-200 text-center">
                <p className="text-[10px] text-gray-400">Pastikan email & password sudah terdaftar.</p>
             </div>

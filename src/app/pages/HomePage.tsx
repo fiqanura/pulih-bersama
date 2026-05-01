@@ -54,7 +54,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     },
     {
       icon: LogIn,
-      title: 'Login',
+      title: 'Masuk',
       description: 'Masuk ke dalam sistem',
       color: '#86efac',
     },

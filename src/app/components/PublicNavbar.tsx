@@ -73,13 +73,13 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({ onNavigate, currentP
                 onClick={() => navigateAndClose('login')}
                 className="border-[#93c5fd] text-[#1e3a8a] hover:bg-[#93c5fd]/10"
               >
-                Login
+                Masuk
               </Button>
               <Button
                 onClick={() => navigateAndClose('register')}
                 className="bg-gradient-to-r from-[#93c5fd] to-[#ddd6fe] text-[#1e3a8a] hover:opacity-90 shadow-sm"
               >
-                Register
+                Daftar
               </Button>
             </div>
           </div>
@@ -120,13 +120,13 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({ onNavigate, currentP
                 onClick={() => navigateAndClose('login')}
                 className="w-full border-[#93c5fd] text-[#1e3a8a] hover:bg-[#93c5fd]/10"
               >
-                Login
+                Masuk
               </Button>
               <Button
                 onClick={() => navigateAndClose('register')}
                 className="w-full bg-gradient-to-r from-[#93c5fd] to-[#ddd6fe] text-[#1e3a8a] hover:opacity-90 shadow-sm"
               >
-                Register
+                Daftar
               </Button>
             </div>
           </div>

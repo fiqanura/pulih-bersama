@@ -36,12 +36,12 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
     const phoneValidation = validatePhone12to13Digits(formData.phone);
     if (!phoneValidation.ok) newErrors.phone = phoneValidation.message;
     if (!formData.password) {
-      newErrors.password = 'Password harus diisi';
+      newErrors.password = 'Kata sandi harus diisi';
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password minimal 6 karakter';
+      newErrors.password = 'Kata sandi minimal 6 karakter';
     }
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Password tidak sama';
+      newErrors.confirmPassword = 'Kata sandi tidak sama';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -72,7 +72,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('Pendaftaran berhasil! Silakan login');
+        toast.success('Pendaftaran berhasil! Silakan masuk');
         setTimeout(() => {
           onNavigate('login');
         }, 1500);
@@ -170,7 +170,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
             {/* Input Password */}
             <div className="space-y-2">
               <Label htmlFor="password" className="flex items-center gap-2">
-                <Lock className="w-4 h-4 text-[#93c5fd]" /> Password
+                <Lock className="w-4 h-4 text-[#93c5fd]" /> Kata Sandi
               </Label>
               <div className="relative">
                 <Input
@@ -190,7 +190,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
             {/* Input Confirm Password */}
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className="flex items-center gap-2">
-                <CircleCheck className="w-4 h-4 text-[#93c5fd]" /> Konfirmasi Password
+                <CircleCheck className="w-4 h-4 text-[#93c5fd]" /> Konfirmasi Kata Sandi
               </Label>
               <div className="relative">
                 <Input
