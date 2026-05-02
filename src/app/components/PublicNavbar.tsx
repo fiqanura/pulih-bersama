@@ -68,15 +68,12 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({ onNavigate, currentP
             ))}
             
             <div className="flex items-center gap-3 ml-4">
-              <Button
-                variant="outline"
-                onClick={() => navigateAndClose('login')}
+              <Button id="tour-login-btn" variant="outline" onClick={() => navigateAndClose('login')}
                 className="border-[#93c5fd] text-[#1e3a8a] hover:bg-[#93c5fd]/10"
               >
                 Masuk
               </Button>
-              <Button
-                onClick={() => navigateAndClose('register')}
+              <Button id="tour-register-btn" onClick={() => navigateAndClose('register')}
                 className="bg-gradient-to-r from-[#93c5fd] to-[#ddd6fe] text-[#1e3a8a] hover:opacity-90 shadow-sm"
               >
                 Daftar
@@ -115,15 +112,12 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({ onNavigate, currentP
             </div>
 
             <div className="pt-2 flex flex-col gap-2">
-              <Button
-                variant="outline"
-                onClick={() => navigateAndClose('login')}
+              <Button id="tour-login-btn" variant="outline" onClick={() => navigateAndClose('login')}
                 className="w-full border-[#93c5fd] text-[#1e3a8a] hover:bg-[#93c5fd]/10"
               >
                 Masuk
               </Button>
-              <Button
-                onClick={() => navigateAndClose('register')}
+              <Button id="tour-register-btn" onClick={() => navigateAndClose('register')}
                 className="w-full bg-gradient-to-r from-[#93c5fd] to-[#ddd6fe] text-[#1e3a8a] hover:opacity-90 shadow-sm"
               >
                 Daftar

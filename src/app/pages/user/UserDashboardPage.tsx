@@ -165,8 +165,7 @@ export const UserDashboardPage: React.FC<UserDashboardPageProps> = ({ onNavigate
                 </p>
               </div>
             </div>
-            <Button
-              onClick={() => onNavigate('diagnosis')}
+            <Button id="tour-start-test-btn" onClick={() => onNavigate('diagnosis')}
               className="bg-gradient-to-r from-[#93c5fd] to-[#ddd6fe] text-[#1e3a8a] hover:opacity-90 px-6 flex-shrink-0"
             >
               Mulai Tes

@@ -210,6 +210,7 @@ export const DiagnosisResultPage: React.FC<DiagnosisResultPageProps> = ({ result
           <ArrowLeft className="w-4 h-4 mr-2" /> Kembali ke Beranda
         </Button>
         <Button
+          id="tour-save-test-btn"
           onClick={() => {
             Promise.resolve(onSave()).catch(() => {
               // ignore: navigation/refresh failures are non-fatal here

@@ -54,6 +54,10 @@ export type DiagnosisResult = {
 };
 
 export const AppContext = React.createContext({
+  hasSeenTour: false,
+  tourStage: 'register' as 'register' | 'login' | 'diagnosis' | 'save' | 'done',
+  setTourStage: (_stage: 'register' | 'login' | 'diagnosis' | 'save' | 'done') => {},
+  completeTour: () => {},
   currentUser: null as User | null,
   users: [] as User[],
   diagnosisResults: [] as DiagnosisResult[],
@@ -138,6 +142,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [diagnosisResults, setDiagnosisResults] = useState<DiagnosisResult[]>([]);
   const [articles, setArticles] = useState<Article[]>(mockArticles);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [hasSeenTour, setHasSeenTour] = useState(() => localStorage.getItem('has_seen_tour') === 'true');
+  const [tourStage, setTourStage] = useState(() => {
+    const hasSeen = localStorage.getItem('has_seen_tour') === 'true';
+    if (!hasSeen) return 'register';
+    const saved = localStorage.getItem('tour_stage');
+    return (saved || 'register') as 'register' | 'login' | 'diagnosis' | 'save' | 'done';
+  });
+
+  const completeTour = () => {
+    localStorage.setItem('has_seen_tour', 'true');
+    localStorage.setItem('tour_stage', 'done');
+    setHasSeenTour(true);
+    setTourStage('done');
+  };
   const [symptoms, setSymptoms] = useState<Symptom[]>([]);
 
   const normalizeRecommendations = (input: unknown): Recommendation[] => {
@@ -1117,6 +1135,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         updateUserRole,
         deleteUser,
         logout,
+        hasSeenTour,
+        tourStage,
+        setTourStage,
+        completeTour,
       }}
     >
       {children}

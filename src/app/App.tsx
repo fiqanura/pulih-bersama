@@ -9,6 +9,7 @@ import { Toaster } from "./components/ui/sonner";
 
 // Public components
 import { PublicNavbar } from "./components/PublicNavbar";
+import { OnboardingTour } from "./components/OnboardingTour";
 import { Footer } from "./components/Footer";
 
 // Public pages
@@ -82,9 +83,18 @@ const MobileTopBar: React.FC = () => {
 };
 
 const AppContent: React.FC = () => {
-  const { currentUser, fetchDiagnosisResults } = useApp();
+  const { currentUser, fetchDiagnosisResults, hasSeenTour, tourStage, setTourStage } = useApp();
   const [currentPage, setCurrentPage] = useState("home");
   const [diagnosisResult, setDiagnosisResult] = useState<CFResult[] | null>(null);
+
+  // ─── Majukan tourStage saat user login ───────────────────────────────────
+  useEffect(() => {
+    if (!hasSeenTour && currentUser && currentUser.role === 'user') {
+      if (tourStage === 'login' || tourStage === 'register') {
+        setTourStage('diagnosis');
+      }
+    }
+  }, [currentUser]); // eslint-disable-line
 
   // --- LOGIKA REDIRECT OTOMATIS BERDASARKAN ROLE ---
   useEffect(() => {
@@ -116,6 +126,11 @@ const AppContent: React.FC = () => {
     setDiagnosisResult(results);
     setCurrentPage("diagnosis-result");
 
+    // Majukan tourStage ke 'save'
+    if (!hasSeenTour && tourStage === 'diagnosis') {
+      setTourStage('save');
+    }
+
     // Diagnosis sudah disimpan ke backend oleh `DiagnosisPage`.
     // Refresh state riwayat supaya langsung sinkron tanpa harus klik tombol simpan.
     if (currentUser?.id) {
@@ -136,6 +151,13 @@ const AppContent: React.FC = () => {
   const handleNavigate = (page: string) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Majukan tahap tour saat user berpindah halaman
+    if (!hasSeenTour) {
+      if (page === 'register' && tourStage === 'register') {
+        setTourStage('login');
+      }
+    }
   };
 
   // --- RENDER LOGIC ---
@@ -144,6 +166,7 @@ const AppContent: React.FC = () => {
   if (!currentUser) {
     return (
       <div className="flex flex-col min-h-screen">
+        <OnboardingTour currentPage={currentPage} />
         <PublicNavbar onNavigate={handleNavigate} currentPage={currentPage} />
         <main className="flex-1">
           {currentPage === "home" && <HomePage onNavigate={handleNavigate} />}
@@ -176,6 +199,7 @@ const AppContent: React.FC = () => {
 
     return (
       <SidebarProvider defaultOpen>
+      <OnboardingTour currentPage={currentPage} diagnosisCompleted={!!diagnosisResult} />
         <Sidebar>
           <UserSidebar currentPage={currentPage} onNavigate={handleNavigate} />
         </Sidebar>

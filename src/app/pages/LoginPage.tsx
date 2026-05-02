@@ -108,7 +108,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
               </div>
             )}
 
-            <Button type="submit" className="w-full bg-gradient-to-r from-[#93c5fd] to-[#ddd6fe] text-[#1e3a8a]" disabled={isLoading}>
+            <Button id="tour-login-btn" type="submit" className="w-full bg-gradient-to-r from-[#93c5fd] to-[#ddd6fe] text-[#1e3a8a]" disabled={isLoading}>
               {isLoading ? 'Sedang masuk...' : 'Masuk'}
             </Button>
 
