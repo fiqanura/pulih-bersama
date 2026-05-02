@@ -3,6 +3,7 @@ import { Card, CardContent } from '../../components/ui/card';
 import { Users, FileText, Activity, TrendingUp, ClipboardList } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, type ChartData } from 'chart.js';
+import { API_BASE_URL } from '../../utils/apiConfig';
 
 ChartJS.register(
   CategoryScale,
@@ -42,7 +43,7 @@ const AdminDashboardPage: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/admin/diagnosis-trend?year=${year}`);
+      const response = await fetch(`${API_BASE_URL}/admin/diagnosis-trend?year=${year}`);
       const payload = await response.json();
 
       // Backend might return either:
@@ -85,7 +86,7 @@ const AdminDashboardPage: React.FC = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/admin/stats');
+        const response = await fetch(`${API_BASE_URL}/admin/stats`);
         const data = await response.json();
         setBackendStats(data);
       } catch (error) {
@@ -95,7 +96,7 @@ const AdminDashboardPage: React.FC = () => {
 
     const fetchUsers = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/admin/user-history');
+        const response = await fetch(`${API_BASE_URL}/admin/user-history`);
         const data = await response.json();
         setUsers(data);
       } catch (error) {

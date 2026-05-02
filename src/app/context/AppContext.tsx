@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { validateCommonEmailDomain } from '../utils/emailValidation';
 import { validatePhone12to13Digits } from '../utils/phoneValidation';
 import { apiClient, getApiErrorMessage } from '../utils/apiClient';
+import { API_BASE_URL, BASE_URL } from '../utils/apiConfig';
 
 // Tambahkan tipe data yang hilang
 export type User = {
@@ -163,7 +164,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
 
     const toAbsoluteBackendUrl = (raw: unknown): string => {
-      const base = 'http://127.0.0.1:8000';
+      const base = BASE_URL;
       let url = String(raw ?? '').trim();
       if (!url) return '';
 
@@ -451,7 +452,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const fetchData = async () => {
       try {
         // 1. Ambil Rekomendasi (Ini yang kamu bilang Berhasil di Console)
-        const resRec = await fetch('http://127.0.0.1:8000/api/recommendations');
+        const resRec = await fetch(`${API_BASE_URL}/recommendations`);
         if (resRec.ok) {
           const dataRec = await resRec.json();
           setRecommendations(normalizeRecommendations(dataRec));
@@ -459,7 +460,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
 
         // 2. AMBIL GEJALA (CEK BAGIAN INI TELITI!)
-        const resSymp = await fetch('http://127.0.0.1:8000/api/symptoms'); // Pastikan URL benar
+        const resSymp = await fetch(`${API_BASE_URL}/symptoms`); // Pastikan URL benar
         if (resSymp.ok) {
           const dataSymp = await resSymp.json();
           console.log("DATA GEJALA BERHASIL MENDARAT:", dataSymp); // Tambahkan ini buat cek
@@ -476,7 +477,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const fetchSymptoms = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/symptoms', {
+      const response = await fetch(`${API_BASE_URL}/symptoms`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -504,7 +505,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     const fetchRecs = async () => {
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/recommendations');
+        const res = await fetch(`${API_BASE_URL}/recommendations`);
         if (res.ok) {
           const data = await res.json();
           console.log('Data rekomendasi dari backend:', data);
@@ -585,7 +586,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const updateProfile = async (
     data: Partial<User>
   ): Promise<{ ok: true; user: User } | { ok: false; message: string }> => {
-    if (!currentUser) return { ok: false, message: 'Kamu belum login.' };
+    if (!currentUser) return { ok: false, message: 'Kamu belum masuk.' };
 
     const optimistic: User = {
       ...currentUser,
@@ -637,7 +638,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const updatePassword = async (newPassword: string): Promise<{ ok: boolean; message?: string }> => {
-    if (!currentUser) return { ok: false, message: 'Kamu belum login.' };
+    if (!currentUser) return { ok: false, message: 'Kamu belum masuk.' };
     try {
       await apiClient.put(
         `/users/${encodeURIComponent(String(currentUser.id))}/password`,
@@ -666,7 +667,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const addSymptom = async (newSymptom: Omit<Symptom, 'id'>) => {
     try {
       console.log('Mengirim data ke backend:', newSymptom);
-      const response = await fetch('http://127.0.0.1:8000/api/symptoms', {
+      const response = await fetch(`${API_BASE_URL}/symptoms`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -692,7 +693,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const updateSymptom = async (id: string, symptom: Partial<Symptom>) => {
     try {
       console.log('Mengirim data pembaruan ke backend:', symptom);
-      const response = await fetch(`http://127.0.0.1:8000/api/symptoms/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/symptoms/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -718,7 +719,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const deleteSymptom = async (id: string) => {
     try {
       console.log('Menghapus gejala dengan ID:', id);
-      const response = await fetch(`http://127.0.0.1:8000/api/symptoms/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/symptoms/${id}`, {
         method: 'DELETE',
         headers: {
           'Accept': 'application/json',
@@ -742,7 +743,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const addRecommendation = async (newRec: any) => {
   try {
     const isFormData = typeof FormData !== 'undefined' && newRec instanceof FormData;
-    const response = await fetch('http://127.0.0.1:8000/api/recommendations', {
+    const response = await fetch(`${API_BASE_URL}/recommendations`, {
       method: 'POST',
       headers: isFormData
         ? { 'Accept': 'application/json' }
@@ -796,7 +797,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const updateRecommendation = async (id: string, updatedData: any) => {
   try {
     const isFormData = typeof FormData !== 'undefined' && updatedData instanceof FormData;
-    const response = await fetch(`http://127.0.0.1:8000/api/recommendations/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/recommendations/${id}`, {
       // Backend: saat edit dengan FormData, gunakan POST ke /api/recommendations/{id}
       method: isFormData ? 'POST' : 'PUT',
       headers: isFormData
@@ -847,7 +848,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   
   const deleteRecommendation = async (id: string) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/recommendations/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE_URL}/recommendations/${id}`, { method: 'DELETE' });
       if (res.ok) {
         console.log('Rekomendasi berhasil dihapus');
         setRecommendations(recommendations.filter(r => r.id !== id));
@@ -924,7 +925,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const id = String(userId ?? currentUser?.id ?? '');
     if (!id) return;
     try {
-      const baseUrl = `http://127.0.0.1:8000/api/diagnoses?user_id=${encodeURIComponent(id)}`;
+      const baseUrl = `${API_BASE_URL}/diagnoses?user_id=${encodeURIComponent(id)}`;
       const headers = { Accept: 'application/json' } as const;
 
       const allRows: any[] = [];
@@ -996,7 +997,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const addUser = async (newUser: Omit<User, 'id'>) => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/users', {
+      const response = await fetch(`${API_BASE_URL}/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1021,7 +1022,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const updateUser = async (id: string, updatedData: Partial<User>) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/users/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

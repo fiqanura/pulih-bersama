@@ -87,7 +87,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Masukkan password"
+                  placeholder="Masukkan kata sandi"
                   required
                   className="border-2 focus:border-[#93c5fd] pr-10"
                   disabled={isLoading}
@@ -121,7 +121,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
 
             {/* Bagian Demo masuk disingkirkan atau disesuaikan dengan akun asli */}
             <div className="pt-4 border-t border-gray-200 text-center">
-               <p className="text-[10px] text-gray-400">Pastikan email & password sudah terdaftar.</p>
+              <p className="text-[10px] text-gray-400">Pastikan email & password sudah terdaftar.</p>
             </div>
           </form>
         </CardContent>

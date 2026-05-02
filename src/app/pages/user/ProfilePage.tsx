@@ -60,21 +60,21 @@ export const ProfilePage: React.FC = () => {
 
   const handleSavePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('Password tidak sama!');
+      toast.error('Kata sandi tidak sama!');
       return;
     }
     if (passwordData.newPassword.length < 6) {
-      toast.error('Password minimal 6 karakter!');
+      toast.error('Kata sandi minimal 6 karakter!');
       return;
     }
     const result = await updatePassword(passwordData.newPassword);
     if (result.ok) {
       setPasswordData({ newPassword: '', confirmPassword: '' });
       setIsEditingPassword(false);
-      toast.success('Password berhasil diubah! 🔒');
+      toast.success('Kata sandi berhasil diubah!');
       return;
     }
-    toast.error(result.message || 'Gagal mengubah password.');
+    toast.error(result.message || 'Gagal mengubah kata sandi.');
   };
 
   return (
@@ -173,28 +173,28 @@ export const ProfilePage: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Lock className="w-5 h-5 text-[#93c5fd]" />
-            Ubah Password
+            Ubah Kata Sandi
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {!isEditingPassword ? (
             <div className="space-y-4">
               <p className="text-gray-600">
-                Pastikan password kamu aman dengan menggantinya secara berkala.
+                Pastikan kata sandi kamu aman dengan menggantinya secara berkala.
               </p>
               <Button
                 onClick={() => setIsEditingPassword(true)}
                 variant="outline"
                 className="border-2 border-[#93c5fd] text-[#1e3a8a]"
               >
-                Ubah Password
+                Ubah Kata Sandi
               </Button>
             </div>
           ) : (
             <div className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">Password Baru</Label>
+                  <Label htmlFor="newPassword">Kata Sandi Baru</Label>
                   <div className="relative">
                     <Input
                       id="newPassword"
@@ -218,14 +218,14 @@ export const ProfilePage: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Konfirmasi Password Baru</Label>
+                  <Label htmlFor="confirmPassword">Konfirmasi Kata Sandi Baru</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
                       type={showConfirmPassword ? 'text' : 'password'}
                       value={passwordData.confirmPassword}
                       onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                      placeholder="Masukkan password yang sama"
+                      placeholder="Masukkan kata sandi yang sama"
                       className="border-2 pr-10"
                     />
                     <Button
@@ -248,7 +248,7 @@ export const ProfilePage: React.FC = () => {
                   className="bg-gradient-to-r from-[#93c5fd] to-[#ddd6fe] text-[#1e3a8a]"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  Simpan Password
+                  Simpan Kata Sandi
                 </Button>
                 <Button
                   variant="outline"
@@ -274,9 +274,9 @@ export const ProfilePage: React.FC = () => {
             <div className="space-y-2">
               <h4 className="font-semibold text-gray-800">Tips Keamanan</h4>
               <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Gunakan password yang unik dan kuat</li>
-                <li>• Jangan bagikan password kepada siapapun</li>
-                <li>• Perbarui informasi profil jika ada perubahan</li>
+                <li>• Gunakan kata sandi yang unik dan kuat</li>
+                <li>• Jangan bagikan kata sandi kepada siapapun</li>
+                <li>• Perbarui informasi akun jika ada perubahan</li>
               </ul>
             </div>
           </div>

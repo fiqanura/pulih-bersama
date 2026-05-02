@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { BASE_URL } from '../utils/apiConfig';
 
 export type InterventionRiskLevel = 'Sedang' | 'Berat';
 
@@ -30,7 +31,7 @@ type Options = {
   baseUrl?: string;
 };
 
-const DEFAULT_BASE_URL = 'http://127.0.0.1:8000';
+const DEFAULT_BASE_URL = BASE_URL;
 
 const toAbsoluteBackendUrl = (raw: unknown, baseUrl: string): string => {
   let url = String(raw ?? '').trim();

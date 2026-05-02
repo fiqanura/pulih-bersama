@@ -8,6 +8,7 @@ import { Plus, Pencil, Trash, Save, X, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import { API_BASE_URL } from '../../utils/apiConfig';
 
 export const SymptomManagementPage: React.FC = () => {
   const { symptoms, setSymptoms, addSymptom, updateSymptom, deleteSymptom } = useApp();
@@ -47,7 +48,7 @@ const [isLoading, setIsLoading] = useState(false);
 
 const fetchSymptoms = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/symptoms', {
+      const response = await fetch(`${API_BASE_URL}/symptoms`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',

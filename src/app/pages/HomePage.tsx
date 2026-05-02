@@ -7,6 +7,7 @@ import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 
 // @ts-ignore
 import LogoFoto from '../../assets/logo_pulih_bersama.png';
+import { API_BASE_URL } from '../utils/apiConfig';
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
@@ -28,7 +29,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   React.useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/articles');
+        const res = await fetch(`${API_BASE_URL}/articles`);
         const data = await res.json();
         setDbArticles(normalizeArticles(data));
       } catch (err) {

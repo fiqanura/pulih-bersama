@@ -3,6 +3,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { Calendar, ArrowLeft, Tag } from 'lucide-react';
+import { API_BASE_URL } from '../utils/apiConfig';
 
 interface NewsDetailPageProps {
   articleId: string;
@@ -34,7 +35,7 @@ export const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ articleId, onNav
       try {
         // 2. Ambil detail artikel spesifik dari Laravel
         // Kita filter di sini atau buat route khusus di Laravel (api/articles/{id})
-        const res = await fetch(`http://127.0.0.1:8000/api/articles`);
+        const res = await fetch(`${API_BASE_URL}/articles`);
         const data = await res.json();
         const list = normalizeArticles(data);
 

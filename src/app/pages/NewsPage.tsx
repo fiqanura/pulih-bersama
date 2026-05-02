@@ -3,6 +3,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { Calendar } from 'lucide-react';
+import { API_BASE_URL } from '../utils/apiConfig';
 
 interface NewsPageProps {
   onNavigate: (page: string) => void;
@@ -24,7 +25,7 @@ export const NewsPage: React.FC<NewsPageProps> = ({ onNavigate }) => {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/articles');
+        const res = await fetch(`${API_BASE_URL}/articles`);
         const data = await res.json();
         setDbArticles(normalizeArticles(data));
       } catch (err) {

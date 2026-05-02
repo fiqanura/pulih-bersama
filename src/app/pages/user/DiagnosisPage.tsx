@@ -4,9 +4,11 @@ import { Button } from '../../components/ui/button';
 import { Progress } from '../../components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '../../components/ui/radio-group';
 import { Label } from '../../components/ui/label';
-import { Loader, ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../components/ui/tooltip';
+import { Loader, ArrowLeft, ArrowRight, CheckCircle2, Info } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '../../utils/apiConfig';
 
 interface DiagnosisPageProps {
   onNavigate: (page: string) => void;
@@ -133,7 +135,7 @@ export const DiagnosisPage: React.FC<DiagnosisPageProps> = ({ onNavigate, onComp
 
       console.log('Payload being sent to API:', payload);
 
-      const response = await fetch('http://127.0.0.1:8000/api/diagnoses', {
+      const response = await fetch(`${API_BASE_URL}/diagnoses`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

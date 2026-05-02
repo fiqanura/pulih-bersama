@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import logo from '../../assets/logo_pulih_bersama.png';
 import { validateCommonEmailDomain } from '../utils/emailValidation';
 import { validatePhone12to13Digits } from '../utils/phoneValidation';
+import { API_BASE_URL } from '../utils/apiConfig';
 
 interface RegisterPageProps {
   onNavigate: (page: string) => void;
@@ -55,7 +56,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
 
     try {
       // TEMBAK LANGSUNG KE BACKEND LARAVEL
-      const response = await fetch('http://127.0.0.1:8000/api/register', {
+      const response = await fetch(`${API_BASE_URL}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,12 +85,19 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
         const phoneError =
           Array.isArray(errorsObj?.phone) ? errorsObj.phone[0] : errorsObj?.phone;
 
+        const translateError = (msg) => {
+          const l = String(msg).toLowerCase();
+          if (l.includes('email has already been taken')) return 'Email ini sudah terdaftar.';
+          if (l.includes('phone has already been taken') || l.includes('phone number has already been taken') || l.includes('telepon')) return 'Nomor telepon ini sudah terdaftar.';
+          return msg;
+        };
+
         if (emailError) {
-          toast.error(String(emailError));
+          toast.error(translateError(emailError));
         } else if (phoneError) {
-          toast.error(String(phoneError));
+          toast.error(translateError(phoneError));
         } else {
-          toast.error(data?.message || 'Terjadi kesalahan pada pendaftaran.');
+          toast.error(translateError(data?.message || 'Terjadi kesalahan pada pendaftaran.'));
         }
       }
     } catch (err) {

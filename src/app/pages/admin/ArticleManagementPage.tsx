@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/table';
+import { API_BASE_URL, BASE_URL } from '../../utils/apiConfig';
 import {
   Dialog,
   DialogContent,
@@ -50,7 +51,6 @@ export const ArticleManagementPage: React.FC = () => {
     articleUrl: '',
   });
 
-  const BASE_URL = 'http://127.0.0.1:8000';
 
   const toAbsoluteBackendUrl = (raw: unknown): string => {
     let url = String(raw ?? '').trim();
@@ -98,7 +98,7 @@ export const ArticleManagementPage: React.FC = () => {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/articles');
+        const response = await fetch(`${API_BASE_URL}/articles`);
         const data = await response.json();
         setArticles(normalizeArticles(data));
       } catch (error) {
@@ -153,8 +153,8 @@ export const ArticleManagementPage: React.FC = () => {
     }
 
     const endpoint = editingArticle
-      ? `http://127.0.0.1:8000/api/articles/${editingArticle.id}`
-      : 'http://127.0.0.1:8000/api/articles';
+      ? `${API_BASE_URL}/articles/${editingArticle.id}`
+      : `${API_BASE_URL}/articles`;
 
     const summary = formData.content?.slice(0, 160) || '';
 
@@ -192,7 +192,7 @@ export const ArticleManagementPage: React.FC = () => {
 
       if (response.ok) {
         toast.success(editingArticle ? 'Berhasil diperbarui!' : 'Berhasil ditambah!');
-        const refreshRes = await fetch('http://127.0.0.1:8000/api/articles');
+        const refreshRes = await fetch(`${API_BASE_URL}/articles`);
         const freshData = await refreshRes.json();
         setArticles(normalizeArticles(freshData));
         setIsDialogOpen(false);
@@ -209,7 +209,7 @@ export const ArticleManagementPage: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (confirm('Yakin ingin menghapus artikel ini?')) {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/articles/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/articles/${id}`, {
           method: 'DELETE',
         });
         if (response.ok) {

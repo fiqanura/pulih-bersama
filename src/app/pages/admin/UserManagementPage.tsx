@@ -30,11 +30,11 @@ export const UserManagementPage: React.FC = () => {
     const newRole = currentRole === 'user' ? 'admin' : 'user';
     const res = await updateUserRole(userId, newRole);
     if (res.ok) {
-      toast.success(`Role berhasil diubah menjadi ${newRole}!`);
+      toast.success(`Hak akses berhasil diubah!`);
       await fetchUsers();
       return;
     }
-    toast.error(res.message || 'Gagal mengubah role.');
+    toast.error(res.message || 'Gagal mengubah hak akses.');
   };
 
   const handleDeleteUser = async (userId: string, userName: string) => {
@@ -58,7 +58,7 @@ export const UserManagementPage: React.FC = () => {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Manajemen User</h1>
-        <p className="text-gray-600">Kelola pengguna dan role</p>
+        <p className="text-gray-600">Kelola pengguna dan hak akses</p>
       </div>
 
       <div className="relative max-w-md">
@@ -105,9 +105,8 @@ export const UserManagementPage: React.FC = () => {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <span
-                        className={`px-3 py-1 rounded-full text-xs ${
-                          user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
-                        }`}
+                        className={`px-3 py-1 rounded-full text-xs ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                          }`}
                       >
                         {user.role === 'admin' ? 'Admin' : 'User'}
                       </span>
@@ -176,7 +175,7 @@ export const UserManagementPage: React.FC = () => {
       <Card className="border-2 bg-gradient-to-br from-[#fde68a]/10 to-[#fca5a5]/10">
         <CardContent className="p-6">
           <p className="text-sm text-gray-700">
-            <strong>⚠️ Perhatian:</strong> Perubahan role akan langsung berlaku. Pastikan Anda memberikan role admin hanya kepada pengguna yang dipercaya.
+            <strong>⚠️ Perhatian:</strong> Perubahan hak akses akan langsung berlaku. Pastikan Anda memberikan hak akses admin hanya kepada pengguna yang dipercaya.
           </p>
         </CardContent>
       </Card>

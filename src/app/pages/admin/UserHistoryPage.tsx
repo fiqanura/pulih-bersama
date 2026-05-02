@@ -6,6 +6,7 @@ import { Input } from '../../components/ui/input';
 import { RecommendationList } from '../../components/intervention/RecommendationList';
 import { BundleModal } from '../../components/intervention/BundleModal';
 import { useInterventionPackages } from '../../hooks/useInterventionPackages';
+import { API_BASE_URL } from '../../utils/apiConfig';
 import {
   Table,
   TableBody,
@@ -83,7 +84,7 @@ export const UserHistoryPage: React.FC<UserHistoryPageProps> = ({ onNavigate }) 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/admin/user-history');
+        const response = await fetch(`${API_BASE_URL}/admin/user-history`);
         const data = await response.json();
         console.log('User History Response:', data); // Debugging
         setDbUsers(data);
@@ -98,7 +99,7 @@ export const UserHistoryPage: React.FC<UserHistoryPageProps> = ({ onNavigate }) 
 
   const fetchDiagnoses = async (userId: number) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/admin/user-diagnoses/${userId}`);
+      const response = await fetch(`${API_BASE_URL}/admin/user-diagnoses/${userId}`);
       const data = await response.json();
       console.log('User Diagnoses Response:', data); // Debugging
       setDiagnoses(data);
