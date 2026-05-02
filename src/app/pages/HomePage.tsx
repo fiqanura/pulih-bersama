@@ -138,7 +138,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {steps.map((step, index) => (
               <Card key={index} className="relative border-2 hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center space-y-4">

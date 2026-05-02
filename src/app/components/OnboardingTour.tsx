@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { Button } from './ui/button';
-import { CheckCircle2, MousePointerClick } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 interface OnboardingTourProps {
   currentPage?: string;
@@ -11,11 +11,13 @@ interface OnboardingTourProps {
 const TOUR_STEPS = [
   {
     target: '#tour-register-btn',
+    fallbackTarget: '#mobile-menu-btn', // Untuk responsivitas di HP/Tablet
     title: '1. Daftar Akun',
     content: 'Klik tombol ini untuk membuat akun baru di Pulih Bersama.',
     page: 'home',
     stage: 'register',
     stepIdx: 0,
+    requireInView: false,
   },
   {
     target: '#tour-login-btn',
@@ -24,14 +26,16 @@ const TOUR_STEPS = [
     page: 'login',
     stage: 'login',
     stepIdx: 1,
+    requireInView: false,
   },
   {
     target: '#tour-start-test-btn',
     title: '3. Isi Diagnosis',
-    content: 'Silakan tekan tombol yang disorot untuk mulai melakukan tes kesehatan mental.',
+    content: 'Klik tombol ini untuk mulai melakukan tes kesehatan mental.',
     page: 'user-dashboard',
     stage: 'diagnosis',
     stepIdx: 2,
+    requireInView: false,
   },
   {
     target: '#tour-save-test-btn',
@@ -40,35 +44,37 @@ const TOUR_STEPS = [
     page: 'diagnosis-result',
     stage: 'save',
     stepIdx: 3,
+    requireInView: true, // Tunggu user scroll sampai tombol ini terlihat!
   },
 ];
 
 export const OnboardingTour: React.FC<OnboardingTourProps> = ({ currentPage }) => {
   const { hasSeenTour, completeTour, tourStage, setTourStage } = useApp();
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
-
+  
   const tooltipRef = useRef<HTMLDivElement>(null);
 
+  // Cari step yang cocok dengan stage & page saat ini
   const currentStep = TOUR_STEPS.find(s => s.stage === tourStage && s.page === currentPage);
-
-  // 🔥 TAKTIK 2: Fungsi untuk mengecek elemen, ditambah pendeteksi Viewport (Layar)
-  const getVisibleElement = (selector: string, requireInViewport: boolean = false) => {
+  
+  // Fungsi untuk mencari elemen target yang BENAR-BENAR TERLIHAT di layar
+  const getVisibleElement = (selector: string, requireInView?: boolean) => {
     const elements = document.querySelectorAll(selector);
     for (let i = 0; i < elements.length; i++) {
       const el = elements[i] as HTMLElement;
       const rect = el.getBoundingClientRect();
       const style = window.getComputedStyle(el);
-
-      let isVisible = rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-
-      // Jika diset TRUE, sistem akan menahan render sampai elemen masuk ke dalam layar saat di-scroll
-      if (isVisible && requireInViewport) {
-        const isInViewport = rect.top >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight);
-        isVisible = isInViewport;
-      }
-
-      if (isVisible) {
-        return { el, rect };
+      // Cek apakah elemen memiliki ukuran dan tidak disembunyikan oleh CSS
+      if (rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden') {
+        if (requireInView) {
+          // Harus berada di dalam viewport (sudah di-scroll sampai terlihat)
+          // Beri sedikit margin (misal 50px) agar tidak terlalu kaku
+          if (rect.top < window.innerHeight - 50 && rect.bottom > 0) {
+            return { el, rect };
+          }
+        } else {
+          return { el, rect };
+        }
       }
     }
     return null;
@@ -80,16 +86,24 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ currentPage }) =
       return;
     }
 
-    // 🔥 TAKTIK 1: Hanya izinkan maju JIKA target asli (tombol) ditekan
     const handleDocumentClick = (e: MouseEvent) => {
-      const targetEl = document.querySelector(currentStep.target);
-
-      // Jika yang diklik adalah tombol yang sedang disorot
-      if (targetEl && targetEl.contains(e.target as Node)) {
-        if (tourStage === 'register') setTourStage('login');
-        else if (tourStage === 'login') setTourStage('diagnosis');
-        else if (tourStage === 'diagnosis') setTourStage('save');
-        else completeTour();
+      if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) {
+        // Cek apakah klik mengenai tombol target itu sendiri (atau fallback-nya)
+        const targetEl = document.querySelector(currentStep.target);
+        const fallbackEl = currentStep.fallbackTarget ? document.querySelector(currentStep.fallbackTarget) : null;
+        
+        const clickedTarget = targetEl?.contains(e.target as Node) || fallbackEl?.contains(e.target as Node);
+        
+        if (clickedTarget) {
+          // Jika tombol target di klik, majukan stage agar panduan sinkron dengan navigasi user
+          if (tourStage === 'register') setTourStage('login');
+          else if (tourStage === 'login') setTourStage('diagnosis');
+          else if (tourStage === 'diagnosis') setTourStage('save');
+          else completeTour();
+        } else {
+          // Klik sembarang (background) -> Jangan ditutup (biarkan panduan tetap muncul)
+          // Sesuai permintaan: "yang panduan diagnosis itu jangan langsung hilang yaa tunggu pengguna klik dulu"
+        }
       }
     };
 
@@ -97,21 +111,30 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ currentPage }) =
 
     const updatePosition = () => {
       if (currentStep) {
-        // Khusus tahap "Save", paksa sistem menunggu sampai user scroll ke bawah (elemen masuk layar)
-        const mustBeInViewport = currentStep.stage === 'save';
-        const found = getVisibleElement(currentStep.target, mustBeInViewport);
+        // Coba cari target utama
+        let found = getVisibleElement(currentStep.target, currentStep.requireInView);
+        
+        // Jika target utama tidak terlihat (misal disembunyikan dalam Hamburger Menu HP/Tablet), coba cari target fallback
+        if (!found && currentStep.fallbackTarget) {
+          found = getVisibleElement(currentStep.fallbackTarget, false);
+        }
 
         if (found) {
           setTargetRect(found.rect);
         } else {
-          setTargetRect(null); // Sembunyikan lampu sorot jika belum di-scroll / belum terlihat
+          setTargetRect(null);
         }
       }
     };
 
+    // Beri sedikit jeda agar DOM selesai dirender
     const timer = setTimeout(updatePosition, 300);
+    
+    // Perbarui posisi saat scroll atau resize
     window.addEventListener('resize', updatePosition);
     window.addEventListener('scroll', updatePosition, true);
+    
+    // Interval fallback jika elemen muncul terlambat atau bergeser
     const interval = setInterval(updatePosition, 500);
 
     return () => {
@@ -123,13 +146,9 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ currentPage }) =
     };
   }, [hasSeenTour, currentStep, tourStage, setTourStage, completeTour]);
 
-  const handleSkip = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    completeTour();
-  };
-
   const handleGotIt = (e: React.MouseEvent) => {
     e.stopPropagation();
+    // Majukan stage agar panduan di halaman ini tertutup dan menunggu halaman berikutnya
     if (tourStage === 'register') setTourStage('login');
     else if (tourStage === 'login') setTourStage('diagnosis');
     else if (tourStage === 'diagnosis') setTourStage('save');
@@ -140,14 +159,16 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ currentPage }) =
 
   return (
     <>
-      <div
+      {/* Overlay Backdrop - pointerEvents: none agar user BISA mengklik tombol di bawahnya */}
+      <div 
         className="fixed inset-0 z-[9998] pointer-events-none transition-all duration-500"
         style={{
           background: `radial-gradient(circle at ${targetRect.left + targetRect.width / 2}px ${targetRect.top + targetRect.height / 2}px, transparent 40px, rgba(0, 0, 0, 0.65) 60px)`
         }}
       />
 
-      <div
+      {/* Cincin Spotlight Tambahan untuk memperjelas target */}
+      <div 
         className="fixed z-[9998] border-2 border-blue-400 rounded-lg pointer-events-none animate-pulse"
         style={{
           top: targetRect.top - 8,
@@ -158,13 +179,15 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ currentPage }) =
         }}
       />
 
-      <div
+      {/* Tooltip Card */}
+      <div 
         ref={tooltipRef}
         className="fixed z-[9999] bg-white rounded-xl shadow-2xl w-[320px] p-5 border-2 border-blue-100 transition-all duration-300 pointer-events-auto"
         style={{
-          top: targetRect.bottom + 20 + 200 > window.innerHeight
-            ? Math.max(10, targetRect.top - 220)
-            : targetRect.bottom + 20,
+          // Posisikan tooltip di bawah atau di atas elemen tergantung ruang yang tersedia
+          top: targetRect.bottom + 20 + 200 > window.innerHeight 
+               ? Math.max(10, targetRect.top - 220) // Di atas
+               : targetRect.bottom + 20,            // Di bawah
           left: Math.max(10, Math.min(targetRect.left, window.innerWidth - 330)),
         }}
       >
@@ -174,50 +197,38 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ currentPage }) =
           </div>
           <h3 className="text-lg font-bold text-slate-800 m-0">{currentStep.title}</h3>
         </div>
-
+        
         <p className="text-slate-600 text-sm leading-relaxed mb-5">
           {currentStep.content}
         </p>
-
+        
+        {/* Progress Bar */}
         <div className="flex gap-1 mb-5">
           {TOUR_STEPS.map((_, idx) => (
-            <div
-              key={idx}
+            <div 
+              key={idx} 
               className={`h-1.5 flex-1 rounded-full ${idx <= currentStep.stepIdx ? 'bg-blue-500' : 'bg-slate-200'}`}
             />
           ))}
         </div>
 
-        <div className="flex justify-between items-center">
-          <button
-            onClick={handleSkip}
-            className="text-sm text-slate-400 hover:text-slate-600 font-medium px-2"
+        <div className="flex justify-end items-center">
+          <Button 
+            onClick={handleGotIt}
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-md gap-2 h-9 px-4 rounded-lg"
           >
-            Selesai
-          </button>
-
-          {/* 🔥 Jika di tahap Diagnosis, tombol Mengerti diubah jadi pesan instruksi */}
-          {currentStep.stage === 'diagnosis' ? (
-            <div className="bg-blue-50 text-blue-600 text-[13px] font-semibold px-3 py-2 rounded-lg flex items-center gap-2 border border-blue-200">
-              <MousePointerClick className="w-4 h-4 animate-bounce" />
-              Klik target disorot
-            </div>
-          ) : (
-            <Button
-              onClick={handleGotIt}
-              className="bg-blue-600 hover:bg-blue-700 text-white shadow-md gap-2 h-9 px-4 rounded-lg"
-            >
-              {currentStep.stage === 'save' ? 'Selesai' : 'Mengerti'} <CheckCircle2 className="w-4 h-4" />
-            </Button>
-          )}
+            Mengerti <CheckCircle2 className="w-4 h-4" />
+          </Button>
         </div>
-
-        <div
+        
+        {/* Tanda panah segitiga penunjuk arah */}
+        <div 
           className="absolute w-4 h-4 bg-white border-blue-100 transform rotate-45"
           style={{
-            ...(targetRect.bottom + 20 + 200 <= window.innerHeight
+            // Jika tooltip di bawah elemen, panah menghadap atas
+            ...(targetRect.bottom + 20 + 200 <= window.innerHeight 
               ? { top: -9, left: 24, borderTopWidth: 2, borderLeftWidth: 2 }
-              : { bottom: -9, left: 24, borderBottomWidth: 2, borderRightWidth: 2 }
+              : { bottom: -9, left: 24, borderBottomWidth: 2, borderRightWidth: 2 } // Jika tooltip di atas elemen, panah menghadap bawah
             )
           }}
         />

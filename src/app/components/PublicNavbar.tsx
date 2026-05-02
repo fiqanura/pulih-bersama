@@ -52,7 +52,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({ onNavigate, currentP
           </button>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-8">
             {navItems.map(item => (
               <button
                 key={item.value}
@@ -83,8 +83,9 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({ onNavigate, currentP
 
           {/* Mobile Menu Button */}
           <button
+            id="mobile-menu-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100"
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
           >
             {mobileMenuOpen ? <X className="w-6 h-6 text-gray-600" /> : <Menu className="w-6 h-6 text-gray-600" />}
           </button>
@@ -93,7 +94,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({ onNavigate, currentP
 
       {/* Mobile Navigation Panel */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border bg-white/95 backdrop-blur-md">
+        <div className="lg:hidden border-t border-border bg-white/95 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-3">
             <div className="flex flex-col gap-2">
               {navItems.map((item) => (

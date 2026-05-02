@@ -209,13 +209,13 @@ export const DiagnosisPage: React.FC<DiagnosisPageProps> = ({ onNavigate, onComp
             }));
             toast.success("Jawaban tersimpan!"); // Tampilkan notifikasi saat jawaban dipilih
           }}
-          className="grid grid-cols-1 md:grid-cols-5 gap-2"
+          className="flex flex-col gap-3"
         >
           {scaleOptions.map((opt) => (
             <div 
               key={opt.value} 
-              className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-50 border border-gray-300 hover:border-gray-400 transition-all w-full md:w-40"
-              style={{ padding: '0.5rem 1rem', whiteSpace: 'nowrap' }}
+              className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-50 border border-gray-300 hover:border-gray-400 transition-all w-full"
+              style={{ padding: '0.5rem 1rem', whiteSpace: 'normal' }}
             >
               <input 
                 type="radio" 
