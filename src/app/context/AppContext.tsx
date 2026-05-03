@@ -1,9 +1,9 @@
-import React, { useState, useEffect, ReactNode } from 'react';
-import { toast } from 'sonner';
-import { validateCommonEmailDomain } from '../utils/emailValidation';
-import { validatePhone12to13Digits } from '../utils/phoneValidation';
-import { apiClient, getApiErrorMessage } from '../utils/apiClient';
-import { API_BASE_URL, BASE_URL } from '../utils/apiConfig';
+import React, { useState, useEffect, ReactNode } from "react";
+import { toast } from "sonner";
+import { validateCommonEmailDomain } from "../utils/emailValidation";
+import { validatePhone12to13Digits } from "../utils/phoneValidation";
+import { apiClient, getApiErrorMessage } from "../utils/apiClient";
+import { API_BASE_URL, BASE_URL } from "../utils/apiConfig";
 
 // Tambahkan tipe data yang hilang
 export type User = {
@@ -11,7 +11,7 @@ export type User = {
   name: string;
   email: string;
   phone: string;
-  role: 'user' | 'admin';
+  role: "user" | "admin";
 };
 
 export type Article = {
@@ -27,9 +27,9 @@ export type Article = {
 export type Recommendation = {
   id: string;
   title: string;
-  type: 'Article' | 'Video';
+  type: "Article" | "Video";
   category: string;
-  risk_level: 'Sedang' | 'Berat';
+  risk_level: "Sedang" | "Berat";
   summary: string;
   thumbnail_url: string;
   link: string;
@@ -41,7 +41,7 @@ export type CFResult = {
   percentage: number;
 };
 
-export type RiskLevel = 'Tidak Terindikasi' | 'Ringan' | 'Sedang' | 'Berat';
+export type RiskLevel = "Tidak Terindikasi" | "Ringan" | "Sedang" | "Berat";
 
 export type DiagnosisResult = {
   id: string;
@@ -55,8 +55,10 @@ export type DiagnosisResult = {
 
 export const AppContext = React.createContext({
   hasSeenTour: false,
-  tourStage: 'register' as 'register' | 'login' | 'diagnosis' | 'save' | 'done',
-  setTourStage: (_stage: 'register' | 'login' | 'diagnosis' | 'save' | 'done') => {},
+  tourStage: "register" as "register" | "login" | "diagnosis" | "save" | "done",
+  setTourStage: (
+    _stage: "register" | "login" | "diagnosis" | "save" | "done",
+  ) => {},
   completeTour: () => {},
   currentUser: null as User | null,
   users: [] as User[],
@@ -68,37 +70,39 @@ export const AppContext = React.createContext({
   fetchDiagnosisResults: async (_userId?: string): Promise<void> => {},
   login: async (email: string, password: string): Promise<boolean> => false,
   updateProfile: async (
-    _data: Partial<User>
+    _data: Partial<User>,
   ): Promise<{ ok: true; user: User } | { ok: false; message: string }> => ({
     ok: false,
-    message: 'Not implemented',
+    message: "Not implemented",
   }),
-  updatePassword: async (_newPassword: string): Promise<{ ok: boolean; message?: string }> => ({
+  updatePassword: async (
+    _newPassword: string,
+  ): Promise<{ ok: boolean; message?: string }> => ({
     ok: false,
-    message: 'Not implemented',
+    message: "Not implemented",
   }),
   saveDiagnosisResult: (result: DiagnosisResult) => {},
-  addArticle: (article: Omit<Article, 'id'>) => {},
+  addArticle: (article: Omit<Article, "id">) => {},
   updateArticle: (id: string, article: Partial<Article>) => {},
   deleteArticle: (id: string) => {},
-  addSymptom: async (newSymptom: Omit<Symptom, 'id'>) => {},
+  addSymptom: async (newSymptom: Omit<Symptom, "id">) => {},
   updateSymptom: (id: string, symptom: Partial<Symptom>) => {},
   deleteSymptom: (id: string) => {},
-  addRecommendation: (rec: Omit<Recommendation, 'id'>) => {},
+  addRecommendation: (rec: Omit<Recommendation, "id">) => {},
   updateRecommendation: (id: string, rec: Partial<Recommendation>) => {},
   deleteRecommendation: (id: string) => {},
   updateUserRole: async (
     _id: string,
-    _role: 'user' | 'admin'
+    _role: "user" | "admin",
   ): Promise<{ ok: true } | { ok: false; message: string }> => ({
     ok: false,
-    message: 'Not implemented',
+    message: "Not implemented",
   }),
   deleteUser: async (
-    _id: string
+    _id: string,
   ): Promise<{ ok: true } | { ok: false; message: string }> => ({
     ok: false,
-    message: 'Not implemented',
+    message: "Not implemented",
   }),
   setSymptoms: (symptoms: Symptom[]) => {},
   logout: () => {},
@@ -118,7 +122,7 @@ export type Symptom = {
 export const useApp = () => {
   const context = React.useContext(AppContext);
   if (!context) {
-    throw new Error('useApp must be used within an AppProvider');
+    throw new Error("useApp must be used within an AppProvider");
   }
   return context;
 };
@@ -127,67 +131,106 @@ export const useApp = () => {
 const mockUsers: User[] = []; // Biarkan kosong, kita akan isi dari DB
 
 const mockArticles: Article[] = [
-  { id: '1', title: 'Judul Dummy', summary: 'Ringkasan', content: 'Konten', image: '', category: 'Psikologi', date: '2025-01-15' },
+  {
+    id: "1",
+    title: "Judul Dummy",
+    summary: "Ringkasan",
+    content: "Konten",
+    image: "",
+    category: "Psikologi",
+    date: "2025-01-15",
+  },
 ];
 
 const mockRecommendations: Recommendation[] = [
-  { id: '1', category: 'Umum', type: 'Article', title: 'Tips', summary: '', thumbnail_url: '', link: '#', risk_level: 'Sedang' },
+  {
+    id: "1",
+    category: "Umum",
+    type: "Article",
+    title: "Tips",
+    summary: "",
+    thumbnail_url: "",
+    link: "#",
+    risk_level: "Sedang",
+  },
 ];
 
 // 2. MULAI PROVIDER
-export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AppProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [token, setToken] = useState<string | null>(null);
-  const [diagnosisResults, setDiagnosisResults] = useState<DiagnosisResult[]>([]);
+  const [diagnosisResults, setDiagnosisResults] = useState<DiagnosisResult[]>(
+    [],
+  );
   const [articles, setArticles] = useState<Article[]>(mockArticles);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [hasSeenTour, setHasSeenTour] = useState(() => localStorage.getItem('has_seen_tour') === 'true');
+  const [hasSeenTour, setHasSeenTour] = useState(
+    () => localStorage.getItem("has_seen_tour") === "true",
+  );
   const [tourStage, setTourStage] = useState(() => {
-    const hasSeen = localStorage.getItem('has_seen_tour') === 'true';
-    if (!hasSeen) return 'register';
-    const saved = localStorage.getItem('tour_stage');
-    return (saved || 'register') as 'register' | 'login' | 'diagnosis' | 'save' | 'done';
+    const hasSeen = localStorage.getItem("has_seen_tour") === "true";
+    if (!hasSeen) return "register";
+    const saved = localStorage.getItem("tour_stage");
+    return (saved || "register") as
+      | "register"
+      | "login"
+      | "diagnosis"
+      | "save"
+      | "done";
   });
 
   const completeTour = () => {
-    localStorage.setItem('has_seen_tour', 'true');
-    localStorage.setItem('tour_stage', 'done');
+    localStorage.setItem("has_seen_tour", "true");
+    localStorage.setItem("tour_stage", "done");
     setHasSeenTour(true);
-    setTourStage('done');
+    setTourStage("done");
   };
   const [symptoms, setSymptoms] = useState<Symptom[]>([]);
 
   const normalizeRecommendations = (input: unknown): Recommendation[] => {
     const list = (() => {
       if (Array.isArray(input)) return input as any[];
-      if (input && typeof input === 'object') {
+      if (input && typeof input === "object") {
         const obj: any = input;
-        const maybe = obj.data ?? obj.recommendations ?? obj.results ?? obj.result;
+        const maybe =
+          obj.data ?? obj.recommendations ?? obj.results ?? obj.result;
         if (Array.isArray(maybe)) return maybe as any[];
-        if (maybe && typeof maybe === 'object') return [maybe as any];
+        if (maybe && typeof maybe === "object") return [maybe as any];
       }
       return [] as any[];
     })();
 
-    const coerceRisk = (raw: unknown): Recommendation['risk_level'] => {
-      const s = String(raw ?? '').toLowerCase().trim();
-      if (s === 'berat') return 'Berat';
-      return 'Sedang';
+    const coerceRisk = (raw: unknown): Recommendation["risk_level"] => {
+      const s = String(raw ?? "")
+        .toLowerCase()
+        .trim();
+      if (s === "berat") return "Berat";
+      return "Sedang";
     };
 
-    const coerceType = (raw: unknown): Recommendation['type'] => {
-      const s = String(raw ?? '').toLowerCase().trim();
-      return s === 'video' ? 'Video' : 'Article';
+    const coerceType = (raw: unknown): Recommendation["type"] => {
+      const s = String(raw ?? "")
+        .toLowerCase()
+        .trim();
+      return s === "video" ? "Video" : "Article";
     };
 
     const toAbsoluteBackendUrl = (raw: unknown): string => {
       const base = BASE_URL;
-      let url = String(raw ?? '').trim();
-      if (!url) return '';
+
+      let url = String(raw ?? "").trim();
+      if (!url) return "";
+
+      // Perbaiki protokol "htts://" menjadi "https://"
+      if (/^htts:\/\//i.test(url)) {
+        url = url.replace(/^htts:\/\//i, "https://");
+      }
 
       // Normalize slashes for any accidental backslashes.
-      url = url.replace(/\\/g, '/');
+      url = url.replace(/\\/g, "/");
 
       // Keep data/blob URLs as-is.
       if (/^(data:|blob:)/i.test(url)) return url;
@@ -196,9 +239,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (/^https?:\/\//i.test(url)) {
         try {
           const parsed = new URL(url);
-          const isLocalHost = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1';
-          const isMissingBackendPort = !parsed.port || parsed.port === '80';
-          const looksLikeStorage = parsed.pathname.startsWith('/storage/') || parsed.pathname.startsWith('/uploads/');
+          const isLocalHost =
+            parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+          const isMissingBackendPort = !parsed.port || parsed.port === "80";
+          const looksLikeStorage =
+            parsed.pathname.startsWith("/storage/") ||
+            parsed.pathname.startsWith("/uploads/");
 
           if (isLocalHost && isMissingBackendPort && looksLikeStorage) {
             return `${base}${parsed.pathname}${parsed.search}${parsed.hash}`;
@@ -206,54 +252,59 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         } catch {
           // ignore parse errors; return as-is
         }
+
         return url;
       }
 
       // Scheme-relative.
-      if (url.startsWith('//')) return `http:${url}`;
+      if (url.startsWith("//")) return `http:${url}`;
 
       // Some backends may return paths like "public/storage/...".
-      if (url.startsWith('public/storage/')) url = url.replace(/^public\//, '');
+      if (url.startsWith("public/storage/")) url = url.replace(/^public\//, "");
 
       // Common Laravel storage/url patterns.
-      if (url.startsWith('storage/')) return `${base}/${url}`;
-      if (url.startsWith('/storage/')) return `${base}${url}`;
+      if (url.startsWith("storage/")) return `${base}/${url}`;
+      if (url.startsWith("/storage/")) return `${base}${url}`;
 
       // Root-relative.
-      if (url.startsWith('/')) return `${base}${url}`;
+      if (url.startsWith("/")) return `${base}${url}`;
 
       // Fallback: treat as relative path.
       return `${base}/${url}`;
     };
 
     return list
-      .filter((r) => r && typeof r === 'object')
+      .filter((r) => r && typeof r === "object")
       .map((r: any) => {
-        const summary = String(r.summary ?? r.ringkasan ?? r.description ?? '');
-        const thumbnailUrl = toAbsoluteBackendUrl(r.thumbnail_url ?? r.thumbnail ?? r.image_url ?? r.image ?? '');
-        const link = String(r.link ?? r.url ?? r.article_url ?? r.video_url ?? '');
+        const summary = String(r.summary ?? r.ringkasan ?? r.description ?? "");
+        const thumbnailUrl = toAbsoluteBackendUrl(
+          r.thumbnail_url ?? r.thumbnail ?? r.image_url ?? r.image ?? "",
+        );
+        const link = String(
+          r.link ?? r.url ?? r.article_url ?? r.video_url ?? "",
+        );
         return {
-          id: String(r.id ?? ''),
-          title: String(r.title ?? ''),
+          id: String(r.id ?? ""),
+          title: String(r.title ?? ""),
           type: coerceType(r.type),
-          category: String(r.category ?? ''),
+          category: String(r.category ?? ""),
           risk_level: coerceRisk(r.risk_level),
           summary,
           thumbnail_url: thumbnailUrl,
           link,
         } as Recommendation;
       })
-        .filter((r) => r.id && r.title && r.category);
+      .filter((r) => r.id && r.title && r.category);
   };
 
   const normalizeUsers = (input: unknown): User[] => {
     if (!Array.isArray(input)) return [];
     return (input as any[])
-      .filter((u) => u && typeof u === 'object')
+      .filter((u) => u && typeof u === "object")
       .map((u: any) => ({
-        id: String(u.id ?? ''),
-        name: String(u.name ?? ''),
-        email: String(u.email ?? ''),
+        id: String(u.id ?? ""),
+        name: String(u.name ?? ""),
+        email: String(u.email ?? ""),
         phone: String(
           u.phone ??
             u.phone_number ??
@@ -263,9 +314,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             u.no_telp ??
             u.noTelp ??
             u.telepon ??
-            ''
+            "",
         ),
-        role: (u.role === 'admin' ? 'admin' : 'user') as User['role'],
+        role: (u.role === "admin" ? "admin" : "user") as User["role"],
       }))
       .filter((u) => u.id && u.email);
   };
@@ -280,31 +331,37 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       u?.no_telp ??
       u?.noTelp ??
       u?.telepon ??
-      '';
-    return String(raw ?? '').trim();
+      "";
+    return String(raw ?? "").trim();
   };
 
   const normalizeUser = (u: any, fallback?: Partial<User>): User => {
-    const phone = getNormalizedUserPhone(u) || String(fallback?.phone ?? '').trim();
-    const role = u?.role === 'admin' ? 'admin' : u?.role === 'user' ? 'user' : (fallback?.role ?? 'user');
+    const phone =
+      getNormalizedUserPhone(u) || String(fallback?.phone ?? "").trim();
+    const role =
+      u?.role === "admin"
+        ? "admin"
+        : u?.role === "user"
+          ? "user"
+          : (fallback?.role ?? "user");
 
     return {
-      id: String(u?.id ?? fallback?.id ?? ''),
-      name: String(u?.name ?? fallback?.name ?? ''),
-      email: String(u?.email ?? fallback?.email ?? ''),
+      id: String(u?.id ?? fallback?.id ?? ""),
+      name: String(u?.name ?? fallback?.name ?? ""),
+      email: String(u?.email ?? fallback?.email ?? ""),
       phone,
-      role: role as User['role'],
+      role: role as User["role"],
     };
   };
 
   const parseFullResults = (raw: unknown): CFResult[] => {
     try {
-      const value = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      const value = typeof raw === "string" ? JSON.parse(raw) : raw;
       if (!Array.isArray(value)) return [];
       return (value as any[])
-        .filter((r) => r && typeof r === 'object')
+        .filter((r) => r && typeof r === "object")
         .map((r: any) => ({
-          category: String(r.category ?? ''),
+          category: String(r.category ?? ""),
           score: Number(r.score ?? 0),
           percentage: Number(r.percentage ?? 0),
         }))
@@ -315,35 +372,50 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const coerceRiskLevel = (raw: unknown, totalScore?: unknown): RiskLevel => {
-    const str = typeof raw === 'string' ? raw : '';
-    if (str === 'Tidak Terindikasi' || str === 'Ringan' || str === 'Sedang' || str === 'Berat') return str;
+    const str = typeof raw === "string" ? raw : "";
+    if (
+      str === "Tidak Terindikasi" ||
+      str === "Ringan" ||
+      str === "Sedang" ||
+      str === "Berat"
+    )
+      return str;
     const score = Number(totalScore);
-    if (!Number.isFinite(score)) return 'Tidak Terindikasi';
-    if (score <= 33) return 'Tidak Terindikasi';
-    if (score <= 60) return 'Ringan';
-    if (score <= 82) return 'Sedang';
-    return 'Berat';
+    if (!Number.isFinite(score)) return "Tidak Terindikasi";
+    if (score <= 33) return "Tidak Terindikasi";
+    if (score <= 60) return "Ringan";
+    if (score <= 82) return "Sedang";
+    return "Berat";
   };
 
   const normalizeDiagnosisResults = (input: unknown): DiagnosisResult[] => {
     const arr = Array.isArray(input)
       ? (input as any[])
-      : (input && typeof input === 'object' && Array.isArray((input as any).data)
-          ? ((input as any).data as any[])
-          : []);
+      : input && typeof input === "object" && Array.isArray((input as any).data)
+        ? ((input as any).data as any[])
+        : [];
 
     return arr
-      .filter((it) => it && typeof it === 'object')
+      .filter((it) => it && typeof it === "object")
       .map((it: any) => {
-        const results = parseFullResults(it.full_results ?? it.fullResults ?? it.results);
-        const dominant = String(it.diagnosis_result ?? it.diagnosis ?? it.dominantCategory ?? '');
-        const created = String(it.created_at ?? it.date ?? new Date().toISOString());
+        const results = parseFullResults(
+          it.full_results ?? it.fullResults ?? it.results,
+        );
+        const dominant = String(
+          it.diagnosis_result ?? it.diagnosis ?? it.dominantCategory ?? "",
+        );
+        const created = String(
+          it.created_at ?? it.date ?? new Date().toISOString(),
+        );
         return {
-          id: String(it.id ?? ''),
-          userId: String(it.user_id ?? it.userId ?? ''),
+          id: String(it.id ?? ""),
+          userId: String(it.user_id ?? it.userId ?? ""),
           date: created,
-          dominantCategory: dominant || '-',
-          overallRisk: coerceRiskLevel(it.risk_level ?? it.overallRisk, it.total_score ?? results?.[0]?.percentage),
+          dominantCategory: dominant || "-",
+          overallRisk: coerceRiskLevel(
+            it.risk_level ?? it.overallRisk,
+            it.total_score ?? results?.[0]?.percentage,
+          ),
           results,
           recommendations: [],
         } as DiagnosisResult;
@@ -354,42 +426,45 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const syncCurrentUserFromUsers = (userList: User[]) => {
     setCurrentUser((prev) => {
       if (!prev) return prev;
-      const found = userList.find((u) => u.id === String(prev.id) || u.email === prev.email);
+      const found = userList.find(
+        (u) => u.id === String(prev.id) || u.email === prev.email,
+      );
       if (!found) return prev;
       const merged: User = {
         ...prev,
         ...found,
         id: String(found.id ?? prev.id),
-        role: (found.role ?? prev.role) as User['role'],
+        role: (found.role ?? prev.role) as User["role"],
       };
-      localStorage.setItem('user', JSON.stringify(merged));
+      localStorage.setItem("user", JSON.stringify(merged));
       return merged;
     });
   };
 
   const getFirstLaravelValidationError = (err: any): string | null => {
     const errors = err?.errors;
-    if (!errors || typeof errors !== 'object') return null;
+    if (!errors || typeof errors !== "object") return null;
     const firstKey = Object.keys(errors)[0];
     const firstVal = firstKey ? (errors as any)[firstKey] : null;
-    if (Array.isArray(firstVal) && typeof firstVal[0] === 'string') return firstVal[0];
-    if (typeof firstVal === 'string') return firstVal;
+    if (Array.isArray(firstVal) && typeof firstVal[0] === "string")
+      return firstVal[0];
+    if (typeof firstVal === "string") return firstVal;
     return null;
   };
 
   // Restore logged-in user on refresh
   useEffect(() => {
-    const raw = localStorage.getItem('user');
+    const raw = localStorage.getItem("user");
     if (!raw) return;
     try {
       const parsed: any = JSON.parse(raw);
       if (!parsed || !parsed.email) return;
       const restored: User = {
-        id: String(parsed.id ?? ''),
-        name: String(parsed.name ?? ''),
-        email: String(parsed.email ?? ''),
-        phone: String(parsed.phone ?? ''),
-        role: (parsed.role === 'admin' ? 'admin' : 'user') as User['role'],
+        id: String(parsed.id ?? ""),
+        name: String(parsed.name ?? ""),
+        email: String(parsed.email ?? ""),
+        phone: String(parsed.phone ?? ""),
+        role: (parsed.role === "admin" ? "admin" : "user") as User["role"],
       };
       setCurrentUser(restored);
     } catch {
@@ -399,22 +474,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Restore token on refresh
   useEffect(() => {
-    const stored = localStorage.getItem('token');
+    const stored = localStorage.getItem("token");
     if (stored) setToken(stored);
   }, []);
 
   const fetchCurrentUser = async () => {
-    const storedToken = localStorage.getItem('token');
+    const storedToken = localStorage.getItem("token");
     if (!storedToken) return;
 
     // Get id from state or localStorage to avoid timing issues on refresh.
-    let userId = String(currentUser?.id ?? '').trim();
+    let userId = String(currentUser?.id ?? "").trim();
     if (!userId) {
       try {
-        const raw = localStorage.getItem('user');
+        const raw = localStorage.getItem("user");
         if (raw) {
           const parsed = JSON.parse(raw);
-          userId = String(parsed?.id ?? '').trim();
+          userId = String(parsed?.id ?? "").trim();
         }
       } catch {
         // ignore
@@ -428,7 +503,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const next = normalizeUser(res.data ?? {}, currentUser ?? undefined);
         if (next.email) {
           setCurrentUser(next);
-          localStorage.setItem('user', JSON.stringify(next));
+          localStorage.setItem("user", JSON.stringify(next));
         }
         return;
       } catch (err) {
@@ -438,20 +513,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     // Fallbacks (optional), depending on backend naming.
     try {
-      const res = await apiClient.get('/user');
+      const res = await apiClient.get("/user");
       const next = normalizeUser(res.data ?? {}, currentUser ?? undefined);
       if (next.email) {
         setCurrentUser(next);
-        localStorage.setItem('user', JSON.stringify(next));
+        localStorage.setItem("user", JSON.stringify(next));
       }
     } catch (err: any) {
       if (err?.response?.status === 404) {
         try {
-          const res = await apiClient.get('/me');
+          const res = await apiClient.get("/me");
           const next = normalizeUser(res.data ?? {}, currentUser ?? undefined);
           if (next.email) {
             setCurrentUser(next);
-            localStorage.setItem('user', JSON.stringify(next));
+            localStorage.setItem("user", JSON.stringify(next));
           }
         } catch {
           // ignore
@@ -473,6 +548,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const resRec = await fetch(`${API_BASE_URL}/recommendations`);
         if (resRec.ok) {
           const dataRec = await resRec.json();
+          console.log("DataRec", dataRec);
           setRecommendations(normalizeRecommendations(dataRec));
           console.log("Data rekomendasi mendarat:", dataRec);
         }
@@ -484,7 +560,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           console.log("DATA GEJALA BERHASIL MENDARAT:", dataSymp); // Tambahkan ini buat cek
           setSymptoms(dataSymp); // <--- INI BAGIAN PALING PENTING!
         }
-
       } catch (error) {
         console.error("Gagal koneksi backend:", error);
       }
@@ -496,24 +571,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const fetchSymptoms = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/symptoms`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Accept': 'application/json',
+          Accept: "application/json",
         },
       });
 
-      console.log('Response status:', response.status);
+      console.log("Response status:", response.status);
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error saat mengambil data gejala dari backend:', errorData);
+        console.error(
+          "Error saat mengambil data gejala dari backend:",
+          errorData,
+        );
         return;
       }
 
       const data = await response.json();
-      console.log('Data gejala dari backend:', data);
+      console.log("Data gejala dari backend:", data);
       setSymptoms(data);
     } catch (error) {
-      console.error('Gagal mengambil data gejala dari server:', error);
+      console.error("Gagal mengambil data gejala dari server:", error);
     }
   };
 
@@ -526,13 +604,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const res = await fetch(`${API_BASE_URL}/recommendations`);
         if (res.ok) {
           const data = await res.json();
-          console.log('Data rekomendasi dari backend:', data);
+          console.log("Data rekomendasi dari backend:", data);
           setRecommendations(normalizeRecommendations(data));
         } else {
-          console.error('Gagal mengambil data rekomendasi dari backend');
+          console.error("Gagal mengambil data rekomendasi dari backend");
         }
       } catch (error) {
-        console.error('Error saat mengambil data rekomendasi:', error);
+        console.error("Error saat mengambil data rekomendasi:", error);
       }
     };
     fetchRecs();
@@ -541,15 +619,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const res = await apiClient.post(
-        '/login',
+        "/login",
         { email, password },
-        { headers: { 'Content-Type': 'application/json' } }
+        { headers: { "Content-Type": "application/json" } },
       );
       const data: any = res.data;
 
-      const tokenValue = String(data?.token ?? data?.access_token ?? data?.data?.token ?? '').trim();
+      const tokenValue = String(
+        data?.token ?? data?.access_token ?? data?.data?.token ?? "",
+      ).trim();
       if (tokenValue) {
-        localStorage.setItem('token', tokenValue);
+        localStorage.setItem("token", tokenValue);
         setToken(tokenValue);
       }
 
@@ -557,7 +637,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       let previousUser: Partial<User> | undefined = undefined;
       try {
-        const rawPrev = localStorage.getItem('user');
+        const rawPrev = localStorage.getItem("user");
         if (rawPrev) previousUser = JSON.parse(rawPrev);
       } catch {
         previousUser = undefined;
@@ -565,10 +645,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       const nextUser: User = normalizeUser(
         { ...incoming, email: incoming?.email ?? email },
-        previousUser
+        previousUser,
       );
       setCurrentUser(nextUser);
-      localStorage.setItem('user', JSON.stringify(nextUser));
+      localStorage.setItem("user", JSON.stringify(nextUser));
 
       // If login payload is incomplete, enrich via authenticated profile endpoint.
       if (tokenValue) {
@@ -581,7 +661,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       return true;
     } catch (error) {
-      console.error('Error connecting to server:', error);
+      console.error("Error connecting to server:", error);
       return false;
     }
   };
@@ -590,21 +670,32 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setUser(null); // Hapus data user dari state
     setUsers([]);
     setToken(null);
-    localStorage.removeItem('user'); // Hapus dari memori browser
-    localStorage.removeItem('token');
-    window.location.href = '/'; // Paksa tendang ke halaman depan
+    localStorage.removeItem("user"); // Hapus dari memori browser
+    localStorage.removeItem("token");
+    window.location.href = "/"; // Paksa tendang ke halaman depan
   };
 
-  const register = async (name: string, email: string, phone: string, password: string): Promise<boolean> => {
-    const newUser: User = { id: Date.now().toString(), name, email, phone, role: 'user' };
+  const register = async (
+    name: string,
+    email: string,
+    phone: string,
+    password: string,
+  ): Promise<boolean> => {
+    const newUser: User = {
+      id: Date.now().toString(),
+      name,
+      email,
+      phone,
+      role: "user",
+    };
     setUsers([...users, newUser]);
     return true;
   };
 
   const updateProfile = async (
-    data: Partial<User>
+    data: Partial<User>,
   ): Promise<{ ok: true; user: User } | { ok: false; message: string }> => {
-    if (!currentUser) return { ok: false, message: 'Kamu belum masuk.' };
+    if (!currentUser) return { ok: false, message: "Kamu belum masuk." };
 
     const optimistic: User = {
       ...currentUser,
@@ -617,10 +708,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const validation = validateCommonEmailDomain(optimistic.email);
     if (!validation.ok) return { ok: false, message: validation.message };
 
-    const email = String(optimistic.email ?? '').trim();
+    const email = String(optimistic.email ?? "").trim();
 
     const phoneValidation = validatePhone12to13Digits(optimistic.phone);
-    if (!phoneValidation.ok) return { ok: false, message: phoneValidation.message };
+    if (!phoneValidation.ok)
+      return { ok: false, message: phoneValidation.message };
     const phone = phoneValidation.normalizedPhone;
 
     try {
@@ -631,7 +723,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           email,
           phone,
         },
-        { headers: { 'Content-Type': 'application/json' } }
+        { headers: { "Content-Type": "application/json" } },
       );
 
       const payload: any = res.data;
@@ -641,22 +733,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         name: String(rawUser.name ?? optimistic.name),
         email: String(rawUser.email ?? optimistic.email),
         phone: String(rawUser.phone ?? phone),
-        role: (rawUser.role === 'admin' ? 'admin' : optimistic.role) as User['role'],
+        role: (rawUser.role === "admin"
+          ? "admin"
+          : optimistic.role) as User["role"],
       };
 
       setCurrentUser(savedUser);
-      localStorage.setItem('user', JSON.stringify(savedUser));
-      setUsers((prev) => prev.map((u) => (u.id === savedUser.id ? { ...u, ...savedUser } : u)));
+      localStorage.setItem("user", JSON.stringify(savedUser));
+      setUsers((prev) =>
+        prev.map((u) => (u.id === savedUser.id ? { ...u, ...savedUser } : u)),
+      );
       return { ok: true, user: savedUser };
     } catch (error) {
-      console.error('Gagal menghubungi server untuk update profil:', error);
-      const message = getApiErrorMessage(error) || 'Gagal terhubung ke server.';
+      console.error("Gagal menghubungi server untuk update profil:", error);
+      const message = getApiErrorMessage(error) || "Gagal terhubung ke server.";
       return { ok: false, message };
     }
   };
 
-  const updatePassword = async (newPassword: string): Promise<{ ok: boolean; message?: string }> => {
-    if (!currentUser) return { ok: false, message: 'Kamu belum masuk.' };
+  const updatePassword = async (
+    newPassword: string,
+  ): Promise<{ ok: boolean; message?: string }> => {
+    if (!currentUser) return { ok: false, message: "Kamu belum masuk." };
     try {
       await apiClient.put(
         `/users/${encodeURIComponent(String(currentUser.id))}/password`,
@@ -664,240 +762,270 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           new_password: newPassword,
           new_password_confirmation: newPassword,
         },
-        { headers: { 'Content-Type': 'application/json' } }
+        { headers: { "Content-Type": "application/json" } },
       );
 
       return { ok: true };
     } catch (error) {
-      console.error('Gagal menghubungi server untuk ganti password:', error);
-      const message = getApiErrorMessage(error) || 'Gagal terhubung ke server.';
+      console.error("Gagal menghubungi server untuk ganti password:", error);
+      const message = getApiErrorMessage(error) || "Gagal terhubung ke server.";
       return { ok: false, message };
     }
   };
-  const saveDiagnosisResult = (result: DiagnosisResult) => setDiagnosisResults([...diagnosisResults, result]);
+  const saveDiagnosisResult = (result: DiagnosisResult) =>
+    setDiagnosisResults([...diagnosisResults, result]);
 
   // CRUD Articles
-  const addArticle = (article: Omit<Article, 'id'>) => setArticles([...articles, { ...article, id: Date.now().toString() }]);
-  const updateArticle = (id: string, article: Partial<Article>) => setArticles(articles.map(a => a.id === id ? { ...a, ...article } : a));
-  const deleteArticle = (id: string) => setArticles(articles.filter(a => a.id !== id));
+  const addArticle = (article: Omit<Article, "id">) =>
+    setArticles([...articles, { ...article, id: Date.now().toString() }]);
+  const updateArticle = (id: string, article: Partial<Article>) =>
+    setArticles(articles.map((a) => (a.id === id ? { ...a, ...article } : a)));
+  const deleteArticle = (id: string) =>
+    setArticles(articles.filter((a) => a.id !== id));
 
   // CRUD Symptoms (SINKRON KE BACKEND)
-  const addSymptom = async (newSymptom: Omit<Symptom, 'id'>) => {
+  const addSymptom = async (newSymptom: Omit<Symptom, "id">) => {
     try {
-      console.log('Mengirim data ke backend:', newSymptom);
+      console.log("Mengirim data ke backend:", newSymptom);
       const response = await fetch(`${API_BASE_URL}/symptoms`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify(newSymptom),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error dari backend:', errorData);
+        console.error("Error dari backend:", errorData);
         return;
       }
 
       const data = await response.json();
-      console.log('Respons dari backend:', data);
+      console.log("Respons dari backend:", data);
       await fetchSymptoms(); // Ambil data terbaru setelah operasi
     } catch (error) {
-      console.error('Gagal menghubungi server:', error);
+      console.error("Gagal menghubungi server:", error);
     }
   };
 
   const updateSymptom = async (id: string, symptom: Partial<Symptom>) => {
     try {
-      console.log('Mengirim data pembaruan ke backend:', symptom);
+      console.log("Mengirim data pembaruan ke backend:", symptom);
       const response = await fetch(`${API_BASE_URL}/symptoms/${id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify(symptom),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error dari backend saat memperbarui gejala:', errorData);
+        console.error("Error dari backend saat memperbarui gejala:", errorData);
         return;
       }
 
       const data = await response.json();
-      console.log('Respons pembaruan dari backend:', data);
+      console.log("Respons pembaruan dari backend:", data);
       await fetchSymptoms(); // Ambil data terbaru setelah operasi
     } catch (error) {
-      console.error('Gagal menghubungi server untuk pembaruan gejala:', error);
+      console.error("Gagal menghubungi server untuk pembaruan gejala:", error);
     }
   };
 
   const deleteSymptom = async (id: string) => {
     try {
-      console.log('Menghapus gejala dengan ID:', id);
+      console.log("Menghapus gejala dengan ID:", id);
       const response = await fetch(`${API_BASE_URL}/symptoms/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Accept': 'application/json',
+          Accept: "application/json",
         },
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error dari backend saat menghapus gejala:', errorData);
+        console.error("Error dari backend saat menghapus gejala:", errorData);
         return;
       }
 
-      console.log('Gejala berhasil dihapus di backend');
+      console.log("Gejala berhasil dihapus di backend");
       await fetchSymptoms(); // Ambil data terbaru setelah operasi
     } catch (error) {
-      console.error('Gagal menghubungi server untuk menghapus gejala:', error);
+      console.error("Gagal menghubungi server untuk menghapus gejala:", error);
     }
   };
 
   // CRUD Recommendations
   const addRecommendation = async (newRec: any) => {
-  try {
-    const isFormData = typeof FormData !== 'undefined' && newRec instanceof FormData;
-    const response = await fetch(`${API_BASE_URL}/recommendations`, {
-      method: 'POST',
-      headers: isFormData
-        ? { 'Accept': 'application/json' }
-        : {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-      body: isFormData ? newRec : JSON.stringify(newRec),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      const normalized = normalizeRecommendations(data);
-      if (normalized.length > 0) {
-        setRecommendations((prev) => [...prev, ...normalized]);
-      } else {
-        // fallback: keep previous behavior if backend returns unexpected shape
-        setRecommendations((prev: any) => [...prev, data]);
-      }
-      toast.success('Berhasil disimpan ke database!'); // Pindahkan toast ke sini
-    } else {
-      let errorData: any = null;
-      try {
-        errorData = await response.json();
-      } catch {
-        errorData = null;
-      }
-      console.error('Ditolak Laravel:', errorData);
-      let message =
-        getFirstLaravelValidationError(errorData) ||
-        errorData?.message ||
-        errorData?.error ||
-        'Data tidak valid';
-
-      if (typeof message === 'string') {
-        if (message.includes("Data too long for column 'link'") || message.includes('Data too long for column \'link\'')) {
-          message = 'Link terlalu panjang. Isi field Link dengan URL saja (contoh: https://...).';
-        }
-        if (message.length > 240) {
-          message = message.slice(0, 240) + '…';
-        }
-      }
-
-      toast.error('Gagal: ' + message);
-    }
-  } catch (error) {
-    console.error("Koneksi Error:", error);
-  }
-};
-
-  const updateRecommendation = async (id: string, updatedData: any) => {
-  try {
-    const isFormData = typeof FormData !== 'undefined' && updatedData instanceof FormData;
-    const response = await fetch(`${API_BASE_URL}/recommendations/${id}`, {
-      // Backend: saat edit dengan FormData, gunakan POST ke /api/recommendations/{id}
-      method: isFormData ? 'POST' : 'PUT',
-      headers: isFormData
-        ? { 'Accept': 'application/json' }
-        : {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-      body: isFormData ? updatedData : JSON.stringify(updatedData),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      const normalized = normalizeRecommendations(data);
-      const next = normalized[0] ?? data;
-      // Update state di web HANYA jika database sukses
-      setRecommendations((prev: any) => prev.map((r: any) => r.id === id ? next : r));
-      toast.success('Database Berhasil Diperbarui!');
-    } else {
-      let err: any = null;
-      try {
-        err = await response.json();
-      } catch {
-        err = null;
-      }
-      console.error('Ditolak Laravel:', err);
-      let message =
-        getFirstLaravelValidationError(err) ||
-        err?.message ||
-        err?.error ||
-        'Gagal sinkron ke database!';
-
-      if (typeof message === 'string') {
-        if (message.includes("Data too long for column 'link'") || message.includes('Data too long for column \'link\'')) {
-          message = 'Link terlalu panjang. Isi field Link dengan URL saja (contoh: https://...).';
-        }
-        if (message.length > 240) {
-          message = message.slice(0, 240) + '…';
-        }
-      }
-
-      toast.error(message);
-    }
-  } catch (error) {
-    console.error("Koneksi Error:", error);
-  }
-};
-  
-  const deleteRecommendation = async (id: string) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/recommendations/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        console.log('Rekomendasi berhasil dihapus');
-        setRecommendations(recommendations.filter(r => r.id !== id));
+      const isFormData =
+        typeof FormData !== "undefined" && newRec instanceof FormData;
+      const response = await fetch(`${API_BASE_URL}/recommendations`, {
+        method: "POST",
+        headers: isFormData
+          ? { Accept: "application/json" }
+          : {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+        body: isFormData ? newRec : JSON.stringify(newRec),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const normalized = normalizeRecommendations(data);
+        if (normalized.length > 0) {
+          setRecommendations((prev) => [...prev, ...normalized]);
+        } else {
+          // fallback: keep previous behavior if backend returns unexpected shape
+          setRecommendations((prev: any) => [...prev, data]);
+        }
+        toast.success("Berhasil disimpan ke database!"); // Pindahkan toast ke sini
       } else {
-        console.error('Gagal menghapus rekomendasi');
+        let errorData: any = null;
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = null;
+        }
+        console.error("Ditolak Laravel:", errorData);
+        let message =
+          getFirstLaravelValidationError(errorData) ||
+          errorData?.message ||
+          errorData?.error ||
+          "Data tidak valid";
+
+        if (typeof message === "string") {
+          if (
+            message.includes("Data too long for column 'link'") ||
+            message.includes("Data too long for column 'link'")
+          ) {
+            message =
+              "Link terlalu panjang. Isi field Link dengan URL saja (contoh: https://...).";
+          }
+          if (message.length > 240) {
+            message = message.slice(0, 240) + "…";
+          }
+        }
+
+        toast.error("Gagal: " + message);
       }
     } catch (error) {
-      console.error('Error saat menghapus rekomendasi:', error);
+      console.error("Koneksi Error:", error);
+    }
+  };
+
+  const updateRecommendation = async (id: string, updatedData: any) => {
+    try {
+      const isFormData =
+        typeof FormData !== "undefined" && updatedData instanceof FormData;
+      const response = await fetch(`${API_BASE_URL}/recommendations/${id}`, {
+        // Backend: saat edit dengan FormData, gunakan POST ke /api/recommendations/{id}
+        method: isFormData ? "POST" : "PUT",
+        headers: isFormData
+          ? { Accept: "application/json" }
+          : {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+        body: isFormData ? updatedData : JSON.stringify(updatedData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const normalized = normalizeRecommendations(data);
+        const next = normalized[0] ?? data;
+        // Update state di web HANYA jika database sukses
+        setRecommendations((prev: any) =>
+          prev.map((r: any) => (r.id === id ? next : r)),
+        );
+        toast.success("Database Berhasil Diperbarui!");
+      } else {
+        let err: any = null;
+        try {
+          err = await response.json();
+        } catch {
+          err = null;
+        }
+        console.error("Ditolak Laravel:", err);
+        let message =
+          getFirstLaravelValidationError(err) ||
+          err?.message ||
+          err?.error ||
+          "Gagal sinkron ke database!";
+
+        if (typeof message === "string") {
+          if (
+            message.includes("Data too long for column 'link'") ||
+            message.includes("Data too long for column 'link'")
+          ) {
+            message =
+              "Link terlalu panjang. Isi field Link dengan URL saja (contoh: https://...).";
+          }
+          if (message.length > 240) {
+            message = message.slice(0, 240) + "…";
+          }
+        }
+
+        toast.error(message);
+      }
+    } catch (error) {
+      console.error("Koneksi Error:", error);
+    }
+  };
+
+  const deleteRecommendation = async (id: string) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/recommendations/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        console.log("Rekomendasi berhasil dihapus");
+        setRecommendations(recommendations.filter((r) => r.id !== id));
+      } else {
+        console.error("Gagal menghapus rekomendasi");
+      }
+    } catch (error) {
+      console.error("Error saat menghapus rekomendasi:", error);
     }
   };
 
   const updateUserRole = async (
     id: string,
-    role: 'user' | 'admin'
+    role: "user" | "admin",
   ): Promise<{ ok: true } | { ok: false; message: string }> => {
     try {
-      const headers = { 'Content-Type': 'application/json' } as const;
+      const headers = { "Content-Type": "application/json" } as const;
       let payload: any = null;
 
       // Prefer a dedicated role endpoint if backend provides it.
       try {
-        const res = await apiClient.patch(`/users/${encodeURIComponent(id)}/role`, { role }, { headers });
+        const res = await apiClient.patch(
+          `/users/${encodeURIComponent(id)}/role`,
+          { role },
+          { headers },
+        );
         payload = res.data;
       } catch (err: any) {
         const status = err?.response?.status;
         if (status === 405) {
-          const res = await apiClient.put(`/users/${encodeURIComponent(id)}/role`, { role }, { headers });
+          const res = await apiClient.put(
+            `/users/${encodeURIComponent(id)}/role`,
+            { role },
+            { headers },
+          );
           payload = res.data;
         } else if (status === 404) {
           // Some backends may accept role update via PUT /users/{id}.
-          const res = await apiClient.put(`/users/${encodeURIComponent(id)}`, { role }, { headers });
+          const res = await apiClient.put(
+            `/users/${encodeURIComponent(id)}`,
+            { role },
+            { headers },
+          );
           payload = res.data;
         } else {
           throw err;
@@ -905,46 +1033,55 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
 
       const raw = payload?.user ?? payload?.data ?? payload ?? {};
-      const savedRole = (raw?.role === 'admin' ? 'admin' : raw?.role === 'user' ? 'user' : role) as User['role'];
+      const savedRole = (
+        raw?.role === "admin" ? "admin" : raw?.role === "user" ? "user" : role
+      ) as User["role"];
 
-      setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, role: savedRole } : u)));
+      setUsers((prev) =>
+        prev.map((u) => (u.id === id ? { ...u, role: savedRole } : u)),
+      );
 
       // Keep currentUser/localStorage in sync if the edited user is the current session user.
       setCurrentUser((prev) => {
         if (!prev) return prev;
         if (String(prev.id) !== String(id)) return prev;
         const next = { ...prev, role: savedRole };
-        localStorage.setItem('user', JSON.stringify(next));
+        localStorage.setItem("user", JSON.stringify(next));
         return next;
       });
 
       return { ok: true };
     } catch (error) {
-      console.error('Gagal menghubungi server untuk mengubah role user:', error);
-      return { ok: false, message: getApiErrorMessage(error) || 'Gagal terhubung ke server.' };
+      console.error(
+        "Gagal menghubungi server untuk mengubah role user:",
+        error,
+      );
+      return {
+        ok: false,
+        message: getApiErrorMessage(error) || "Gagal terhubung ke server.",
+      };
     }
   };
 
-  
   const fetchUsers = async () => {
     try {
-      const res = await apiClient.get('/users');
+      const res = await apiClient.get("/users");
       const data = res.data;
-      console.log('Data user dari backend:', data);
+      console.log("Data user dari backend:", data);
       const normalized = normalizeUsers(data);
       setUsers(normalized);
       syncCurrentUserFromUsers(normalized);
     } catch (error) {
-      console.error('Gagal mengambil data user dari server:', error);
+      console.error("Gagal mengambil data user dari server:", error);
     }
   };
 
   const fetchDiagnosisResults = async (userId?: string) => {
-    const id = String(userId ?? currentUser?.id ?? '');
+    const id = String(userId ?? currentUser?.id ?? "");
     if (!id) return;
     try {
       const baseUrl = `${API_BASE_URL}/diagnoses?user_id=${encodeURIComponent(id)}`;
-      const headers = { Accept: 'application/json' } as const;
+      const headers = { Accept: "application/json" } as const;
 
       const allRows: any[] = [];
       let nextUrl: string | null = baseUrl;
@@ -955,9 +1092,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (seen.has(nextUrl)) break;
         seen.add(nextUrl);
 
-        const response = await fetch(nextUrl, { method: 'GET', headers });
+        const response = await fetch(nextUrl, { method: "GET", headers });
         if (!response.ok) {
-          let message = 'Gagal mengambil riwayat diagnosis.';
+          let message = "Gagal mengambil riwayat diagnosis.";
           try {
             const err = await response.json();
             message = err?.message || err?.error || message;
@@ -977,16 +1114,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           break;
         }
 
-        const pageRows = Array.isArray((payload as any)?.data) ? ((payload as any).data as any[]) : [];
+        const pageRows = Array.isArray((payload as any)?.data)
+          ? ((payload as any).data as any[])
+          : [];
         allRows.push(...pageRows);
 
         const nextPageUrl = (payload as any)?.next_page_url;
-        if (typeof nextPageUrl === 'string' && nextPageUrl) {
+        if (typeof nextPageUrl === "string" && nextPageUrl) {
           nextUrl = nextPageUrl;
         } else {
           const currentPage = Number((payload as any)?.current_page);
           const lastPage = Number((payload as any)?.last_page);
-          if (Number.isFinite(currentPage) && Number.isFinite(lastPage) && currentPage < lastPage) {
+          if (
+            Number.isFinite(currentPage) &&
+            Number.isFinite(lastPage) &&
+            currentPage < lastPage
+          ) {
             nextUrl = `${baseUrl}&page=${currentPage + 1}`;
           } else {
             nextUrl = null;
@@ -998,11 +1141,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       const normalized = normalizeDiagnosisResults(allRows)
         .filter((r) => r.userId === id)
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        .sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+        );
 
       setDiagnosisResults(normalized);
     } catch (error) {
-      console.error('Gagal menghubungi server untuk ambil riwayat diagnosis:', error);
+      console.error(
+        "Gagal menghubungi server untuk ambil riwayat diagnosis:",
+        error,
+      );
     }
   };
 
@@ -1013,68 +1161,73 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     })();
   }, [currentUser?.id]);
 
-  const addUser = async (newUser: Omit<User, 'id'>) => {
+  const addUser = async (newUser: Omit<User, "id">) => {
     try {
       const response = await fetch(`${API_BASE_URL}/users`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify(newUser),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error dari backend saat menambahkan user:', errorData);
+        console.error("Error dari backend saat menambahkan user:", errorData);
         return;
       }
 
       const data = await response.json();
-      console.log('User berhasil ditambahkan:', data);
+      console.log("User berhasil ditambahkan:", data);
       setUsers((prev) => [...prev, data]);
     } catch (error) {
-      console.error('Gagal menghubungi server untuk menambahkan user:', error);
+      console.error("Gagal menghubungi server untuk menambahkan user:", error);
     }
   };
 
   const updateUser = async (id: string, updatedData: Partial<User>) => {
     try {
       const response = await fetch(`${API_BASE_URL}/users/${id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify(updatedData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error dari backend saat memperbarui user:', errorData);
+        console.error("Error dari backend saat memperbarui user:", errorData);
         return;
       }
 
       const data = await response.json();
-      console.log('User berhasil diperbarui:', data);
-      setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...data } : u)));
+      console.log("User berhasil diperbarui:", data);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === id ? { ...u, ...data } : u)),
+      );
     } catch (error) {
-      console.error('Gagal menghubungi server untuk memperbarui user:', error);
+      console.error("Gagal menghubungi server untuk memperbarui user:", error);
     }
   };
 
   const deleteUser = async (
-    id: string
+    id: string,
   ): Promise<{ ok: true } | { ok: false; message: string }> => {
     try {
       await apiClient.delete(`/users/${encodeURIComponent(id)}`);
 
-      console.log('User berhasil dihapus di backend');
+      console.log("User berhasil dihapus di backend");
       setUsers((prev) => prev.filter((u) => u.id !== id));
       return { ok: true };
     } catch (error) {
-      console.error('Gagal menghubungi server untuk menghapus user:', error);
-      return { ok: false, message: getApiErrorMessage(error) || 'Gagal terhubung ke server.' };
+      console.error("Gagal menghubungi server untuk menghapus user:", error);
+      return {
+        ok: false,
+        message: getApiErrorMessage(error) || "Gagal terhubung ke server.",
+      };
     }
   };
 

@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
-import { BASE_URL } from '../utils/apiConfig';
+import { useEffect, useMemo, useState } from "react";
+import { API_BASE_URL, BASE_URL } from "../utils/apiConfig";
 
-export type InterventionRiskLevel = 'Sedang' | 'Berat';
+export type InterventionRiskLevel = "Sedang" | "Berat";
 
 export type InterventionContentItem = {
   id: string;
   title: string;
-  type: 'Article' | 'Video';
+  type: "Article" | "Video";
   category: string;
   risk_level: InterventionRiskLevel;
   summary: string;
@@ -34,18 +34,26 @@ type Options = {
 const DEFAULT_BASE_URL = BASE_URL;
 
 const toAbsoluteBackendUrl = (raw: unknown, baseUrl: string): string => {
-  let url = String(raw ?? '').trim();
-  if (!url) return '';
+  let url = String(raw ?? "").trim();
+  if (!url) return "";
 
-  url = url.replace(/\\/g, '/');
+  // Perbaiki protokol "htts://" menjadi "https://"
+  if (/^htts:\/\//i.test(url)) {
+    url = url.replace(/^htts:\/\//i, "https://");
+  }
+
+  url = url.replace(/\\/g, "/");
   if (/^(data:|blob:)/i.test(url)) return url;
 
   if (/^https?:\/\//i.test(url)) {
     try {
       const parsed = new URL(url);
-      const isLocalHost = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1';
-      const isMissingBackendPort = !parsed.port || parsed.port === '80';
-      const looksLikeStorage = parsed.pathname.startsWith('/storage/') || parsed.pathname.startsWith('/uploads/');
+      const isLocalHost =
+        parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+      const isMissingBackendPort = !parsed.port || parsed.port === "80";
+      const looksLikeStorage =
+        parsed.pathname.startsWith("/storage/") ||
+        parsed.pathname.startsWith("/uploads/");
       if (isLocalHost && isMissingBackendPort && looksLikeStorage) {
         return `${baseUrl}${parsed.pathname}${parsed.search}${parsed.hash}`;
       }
@@ -55,29 +63,36 @@ const toAbsoluteBackendUrl = (raw: unknown, baseUrl: string): string => {
     return url;
   }
 
-  if (url.startsWith('//')) return `http:${url}`;
-  if (url.startsWith('public/storage/')) url = url.replace(/^public\//, '');
-  if (url.startsWith('storage/')) return `${baseUrl}/${url}`;
-  if (url.startsWith('/storage/')) return `${baseUrl}${url}`;
-  if (url.startsWith('/')) return `${baseUrl}${url}`;
-  return `${baseUrl}/${url}`;
+  console.log("url", url);
+  if (url.startsWith("//")) return `http:${url}`;
+  if (url.startsWith("public/storage/")) url = url.replace(/^public\//, "");
+  if (url.startsWith("storage/")) return `${baseUrl}/${url}`;
+  if (url.startsWith("/storage/")) return `${baseUrl}${url}`;
+  if (url.startsWith("/")) return `${baseUrl}${url}`;
+
+  return `${url}`;
 };
 
-export function useInterventionPackages(results: CfResultLike[], options?: Options) {
+export function useInterventionPackages(
+  results: CfResultLike[],
+  options?: Options,
+) {
   const enabled = options?.enabled ?? true;
   const baseUrl = options?.baseUrl ?? DEFAULT_BASE_URL;
 
   const normalizedResults = (Array.isArray(results) ? results : [])
-    .filter((r) => r && typeof r === 'object')
+    .filter((r) => r && typeof r === "object")
     .map((r) => ({
-      category: String((r as any).category ?? '').trim(),
+      category: String((r as any).category ?? "").trim(),
       percentage: Number((r as any).percentage ?? 0),
     }))
     .filter((r) => r.category);
 
   // Stable dependency for effects even if callers pass a new array instance each render.
   // (React compares deps by value for primitives; identical strings won't retrigger effects.)
-  const payloadKey = normalizedResults.map((r) => `${r.category}|${r.percentage}`).join(';;');
+  const payloadKey = normalizedResults
+    .map((r) => `${r.category}|${r.percentage}`)
+    .join(";;");
 
   const payload = useMemo(() => {
     return { results: normalizedResults };
@@ -105,19 +120,23 @@ export function useInterventionPackages(results: CfResultLike[], options?: Optio
     const controller = new AbortController();
 
     const coerceRisk = (raw: unknown): InterventionRiskLevel => {
-      const s = String(raw ?? '').toLowerCase().trim();
-      return s === 'berat' ? 'Berat' : 'Sedang';
+      const s = String(raw ?? "")
+        .toLowerCase()
+        .trim();
+      return s === "berat" ? "Berat" : "Sedang";
     };
 
-    const coerceType = (raw: unknown): 'Article' | 'Video' => {
-      const s = String(raw ?? '').toLowerCase().trim();
-      return s === 'video' ? 'Video' : 'Article';
+    const coerceType = (raw: unknown): "Article" | "Video" => {
+      const s = String(raw ?? "")
+        .toLowerCase()
+        .trim();
+      return s === "video" ? "Video" : "Article";
     };
 
     const normalizeRec = (rec: any): InterventionContentItem | null => {
-      const id = String(rec?.id ?? '').trim();
-      const title = String(rec?.title ?? '').trim();
-      const category = String(rec?.category ?? '').trim();
+      const id = String(rec?.id ?? "").trim();
+      const title = String(rec?.title ?? "").trim();
+      const category = String(rec?.category ?? "").trim();
       if (!id || !title || !category) return null;
 
       return {
@@ -126,9 +145,9 @@ export function useInterventionPackages(results: CfResultLike[], options?: Optio
         type: coerceType(rec?.type),
         category,
         risk_level: coerceRisk(rec?.risk_level),
-        summary: String(rec?.summary ?? ''),
-        thumbnail_url: toAbsoluteBackendUrl(rec?.thumbnail_url ?? '', baseUrl),
-        link: String(rec?.link ?? ''),
+        summary: String(rec?.summary ?? ""),
+        thumbnail_url: toAbsoluteBackendUrl(rec?.thumbnail_url ?? "", baseUrl),
+        link: String(rec?.link ?? ""),
       };
     };
 
@@ -137,11 +156,11 @@ export function useInterventionPackages(results: CfResultLike[], options?: Optio
       setError(null);
 
       try {
-        const res = await fetch(`${baseUrl}/api/intervention-packages`, {
-          method: 'POST',
+        const res = await fetch(`${API_BASE_URL}/intervention-packages`, {
+          method: "POST",
           headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
+            Accept: "application/json",
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
           signal: controller.signal,
@@ -149,19 +168,24 @@ export function useInterventionPackages(results: CfResultLike[], options?: Optio
 
         if (!res.ok) {
           let msg = `Gagal mengambil paket (HTTP ${res.status})`;
-          const contentType = res.headers.get('content-type') ?? '';
+          const contentType = res.headers.get("content-type") ?? "";
           try {
-            if (contentType.includes('application/json')) {
+            if (contentType.includes("application/json")) {
               const err = await res.json();
-              const firstKey = err?.errors && typeof err.errors === 'object' ? Object.keys(err.errors)[0] : null;
+              const firstKey =
+                err?.errors && typeof err.errors === "object"
+                  ? Object.keys(err.errors)[0]
+                  : null;
               const firstVal = firstKey ? err.errors[firstKey] : null;
               const firstMsg = Array.isArray(firstVal)
                 ? firstVal[0]
-                : typeof firstVal === 'string'
+                : typeof firstVal === "string"
                   ? firstVal
                   : null;
-              if (typeof firstMsg === 'string' && firstMsg.trim()) msg = firstMsg;
-              else if (typeof err?.message === 'string' && err.message.trim()) msg = err.message;
+              if (typeof firstMsg === "string" && firstMsg.trim())
+                msg = firstMsg;
+              else if (typeof err?.message === "string" && err.message.trim())
+                msg = err.message;
             } else {
               const text = (await res.text()).trim();
               if (text) msg = `${msg}: ${text.slice(0, 200)}`;
@@ -177,23 +201,33 @@ export function useInterventionPackages(results: CfResultLike[], options?: Optio
 
         const normalized: InterventionPackage[] = rawPackages
           .map((p: any) => {
-            const id = String(p?.id ?? '').trim();
-            const title = String(p?.package_name ?? p?.packageName ?? p?.title ?? '').trim();
-            const categoryTag = String(p?.category_tag ?? p?.categoryTag ?? '').trim();
-            const systemMessage = String(p?.system_message ?? p?.systemMessage ?? '').trim();
+            const id = String(p?.id ?? "").trim();
+            const title = String(
+              p?.package_name ?? p?.packageName ?? p?.title ?? "",
+            ).trim();
+            const categoryTag = String(
+              p?.category_tag ?? p?.categoryTag ?? "",
+            ).trim();
+            const systemMessage = String(
+              p?.system_message ?? p?.systemMessage ?? "",
+            ).trim();
             if (!id || !title) return null;
 
             const articles = Array.isArray(p?.articles)
-              ? (p.articles.map(normalizeRec).filter(Boolean) as InterventionContentItem[])
+              ? (p.articles
+                  .map(normalizeRec)
+                  .filter(Boolean) as InterventionContentItem[])
               : [];
             const videos = Array.isArray(p?.videos)
-              ? (p.videos.map(normalizeRec).filter(Boolean) as InterventionContentItem[])
+              ? (p.videos
+                  .map(normalizeRec)
+                  .filter(Boolean) as InterventionContentItem[])
               : [];
 
             return {
               id,
               title,
-              categoryTag: categoryTag || 'Pemulihan',
+              categoryTag: categoryTag || "Pemulihan",
               riskLevel: coerceRisk(p?.risk_level ?? p?.riskLevel),
               systemMessage,
               articles,
@@ -204,9 +238,9 @@ export function useInterventionPackages(results: CfResultLike[], options?: Optio
 
         setPackages(normalized);
       } catch (e: any) {
-        if (e?.name === 'AbortError') return;
+        if (e?.name === "AbortError") return;
         setPackages([]);
-        setError(String(e?.message ?? 'Gagal memuat rekomendasi pemulihan.'));
+        setError(String(e?.message ?? "Gagal memuat rekomendasi pemulihan."));
       } finally {
         setLoading(false);
       }
