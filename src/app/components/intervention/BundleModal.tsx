@@ -16,6 +16,14 @@ type Props = {
 export const BundleModal: React.FC<Props> = ({ selectedPackage, onClose, onNavigate, from }) => {
   const stripRiskSuffix = (value: string) => value.replace(/\s*\((sedang|berat)\)\s*$/i, '').trim();
 
+  const truncateWords = (text: unknown, maxWords: number) => {
+    const value = String(text ?? '').trim();
+    if (!value) return '';
+    const words = value.split(/\s+/).filter(Boolean);
+    if (words.length <= maxWords) return value;
+    return `${words.slice(0, maxWords).join(' ')}…`;
+  };
+
   const persistReturnState = () => {
     if (!selectedPackage) return;
     try {
@@ -58,7 +66,7 @@ export const BundleModal: React.FC<Props> = ({ selectedPackage, onClose, onNavig
 
   return (
     <Dialog open={Boolean(selectedPackage)} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] sm:max-h-[80vh] overflow-y-auto overflow-x-hidden pr-10 overscroll-contain [-webkit-overflow-scrolling:touch]">
         {selectedPackage && (
           <>
             <DialogHeader>
@@ -71,9 +79,11 @@ export const BundleModal: React.FC<Props> = ({ selectedPackage, onClose, onNavig
               </DialogDescription>
             </DialogHeader>
 
-            <Alert>
+            <Alert className="min-w-0">
               <AlertTitle>Pesan Sistem</AlertTitle>
-              <AlertDescription>{selectedPackage.systemMessage}</AlertDescription>
+              <AlertDescription className="min-w-0 break-words whitespace-normal">
+                {selectedPackage.systemMessage}
+              </AlertDescription>
             </Alert>
 
             <div className="space-y-5">
@@ -85,14 +95,18 @@ export const BundleModal: React.FC<Props> = ({ selectedPackage, onClose, onNavig
                   <div className="space-y-2">
                     {selectedPackage.articles.map((rec) => (
                       <Card key={rec.id} className="border">
-                        <CardContent className="p-4 flex items-start justify-between gap-4">
-                          <div className="min-w-0">
-                            <p className="font-medium text-gray-800 line-clamp-1">{rec.title}</p>
-                            <p className="text-sm text-gray-500 line-clamp-2 mt-1">{rec.summary || ''}</p>
+                        <CardContent className="p-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                          <div className="min-w-0 w-full">
+                            <p className="font-medium text-gray-800 break-words whitespace-normal line-clamp-none sm:line-clamp-2">
+                              {rec.title}
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1 break-words whitespace-normal">
+                              {truncateWords(rec.summary || '', 12)}
+                            </p>
                           </div>
                           <Button
                             variant="outline"
-                            className="shrink-0"
+                            className="shrink-0 w-full sm:w-auto"
                             onClick={() => {
                               persistReturnState();
                               onClose();
@@ -116,14 +130,18 @@ export const BundleModal: React.FC<Props> = ({ selectedPackage, onClose, onNavig
                   <div className="space-y-2">
                     {selectedPackage.videos.map((rec) => (
                       <Card key={rec.id} className="border">
-                        <CardContent className="p-4 flex items-start justify-between gap-4">
-                          <div className="min-w-0">
-                            <p className="font-medium text-gray-800 line-clamp-1">{rec.title}</p>
-                            <p className="text-sm text-gray-500 line-clamp-2 mt-1">{rec.summary || ''}</p>
+                        <CardContent className="p-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                          <div className="min-w-0 w-full">
+                            <p className="font-medium text-gray-800 break-words whitespace-normal line-clamp-none sm:line-clamp-2">
+                              {rec.title}
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1 break-words whitespace-normal">
+                              {truncateWords(rec.summary || '', 12)}
+                            </p>
                           </div>
                           <Button
                             variant="outline"
-                            className="shrink-0"
+                            className="shrink-0 w-full sm:w-auto"
                             onClick={() => {
                               persistReturnState();
                               onClose();

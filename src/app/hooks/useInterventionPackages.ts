@@ -215,13 +215,13 @@ export function useInterventionPackages(
 
             const articles = Array.isArray(p?.articles)
               ? (p.articles
-                  .map(normalizeRec)
-                  .filter(Boolean) as InterventionContentItem[])
+                .map(normalizeRec)
+                .filter(Boolean) as InterventionContentItem[])
               : [];
             const videos = Array.isArray(p?.videos)
               ? (p.videos
-                  .map(normalizeRec)
-                  .filter(Boolean) as InterventionContentItem[])
+                .map(normalizeRec)
+                .filter(Boolean) as InterventionContentItem[])
               : [];
 
             return {

@@ -318,7 +318,7 @@ export const RecommendationManagementPage: React.FC = () => {
                 <Input
                   value={formData.link}
                   onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                  placeholder={formData.type === 'Video' ? 'https://youtu.be/... atau https://...' : 'https://... (opsional untuk artikel)'}
+                  placeholder={formData.type === 'Video' ? 'https://youtu.be/... atau https://...' : 'https://...'}
                 />
                 <p className="text-xs text-gray-500">
                   Isi dengan URL sumber asli / video. Jangan isi dengan teks artikel panjang.

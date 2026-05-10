@@ -261,17 +261,17 @@ export const UserHistoryPage: React.FC<UserHistoryPageProps> = ({ onNavigate }) 
           <CardContent className="p-6">
             <h2 className="text-2xl font-bold text-[#1e3a8a] mb-6">Detail Profil & Riwayat</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 bg-gray-50 rounded-xl mb-8">
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs text-gray-500 uppercase font-bold">Nama Lengkap</p>
-                <p className="font-semibold text-lg">{selectedUser.name}</p>
+                <p className="font-semibold text-lg break-words whitespace-normal">{selectedUser.name}</p>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs text-gray-500 uppercase font-bold">Email</p>
-                <p className="font-semibold text-lg">{selectedUser.email}</p>
+                <p className="font-semibold text-lg break-all whitespace-normal">{selectedUser.email}</p>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs text-gray-500 uppercase font-bold">Nomor Telepon</p>
-                <p className="font-semibold text-lg">{selectedUser.phone || '-'}</p>
+                <p className="font-semibold text-lg break-all whitespace-normal">{selectedUser.phone || '-'}</p>
               </div>
             </div>
 
@@ -326,7 +326,13 @@ export const UserHistoryPage: React.FC<UserHistoryPageProps> = ({ onNavigate }) 
                             </div>
                             <div>
                               <p className="text-xs text-gray-500 uppercase font-bold">Tanggal</p>
-                              <p className="font-semibold text-sm">{new Date(diagnosis.created_at).toLocaleString('id-ID')}</p>
+                              <p className="font-semibold text-sm">
+                                {new Date(diagnosis.created_at).toLocaleDateString('id-ID', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                })}
+                              </p>
                             </div>
                             <div>
                               <p className="text-xs text-gray-500 uppercase font-bold">Risiko (Keseluruhan)</p>

@@ -7,7 +7,7 @@ import { useApp } from '../../context/AppContext';
 import { User, Mail, Phone, Lock, Save, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { validateCommonEmailDomain } from '../../utils/emailValidation';
-import { validatePhone12to13Digits } from '../../utils/phoneValidation';
+import { validatePhone11to13Digits } from '../../utils/phoneValidation';
 
 export const ProfilePage: React.FC = () => {
   const { currentUser, updateProfile, updatePassword } = useApp();
@@ -43,7 +43,7 @@ export const ProfilePage: React.FC = () => {
       return;
     }
 
-    const phoneValidation = validatePhone12to13Digits(profileData.phone);
+    const phoneValidation = validatePhone11to13Digits(profileData.phone);
     if (!phoneValidation.ok) {
       toast.error(phoneValidation.message);
       return;

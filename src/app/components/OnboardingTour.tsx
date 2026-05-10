@@ -20,9 +20,10 @@ const TOUR_STEPS = [
     requireInView: false,
   },
   {
-    target: '#tour-login-btn',
+    target: '#tour-login-submit-btn',
+    fallbackTarget: '#tour-login-btn',
     title: '2. Masuk (Login)',
-    content: 'Masukkan email dan kata sandi Anda, lalu klik tombol ini untuk masuk.',
+    content: 'Masukkan email dan kata sandi Anda.',
     page: 'login',
     stage: 'login',
     stepIdx: 1,
@@ -53,6 +54,13 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ currentPage }) =
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   
   const tooltipRef = useRef<HTMLDivElement>(null);
+
+  const advanceStage = () => {
+    if (tourStage === 'register') setTourStage('login');
+    else if (tourStage === 'login') setTourStage('diagnosis');
+    else if (tourStage === 'diagnosis') setTourStage('save');
+    else completeTour();
+  };
 
   // Cari step yang cocok dengan stage & page saat ini
   const currentStep = TOUR_STEPS.find(s => s.stage === tourStage && s.page === currentPage);
@@ -87,23 +95,25 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ currentPage }) =
     }
 
     const handleDocumentClick = (e: MouseEvent) => {
-      if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) {
-        // Cek apakah klik mengenai tombol target itu sendiri (atau fallback-nya)
-        const targetEl = document.querySelector(currentStep.target);
-        const fallbackEl = currentStep.fallbackTarget ? document.querySelector(currentStep.fallbackTarget) : null;
-        
-        const clickedTarget = targetEl?.contains(e.target as Node) || fallbackEl?.contains(e.target as Node);
-        
-        if (clickedTarget) {
-          // Jika tombol target di klik, majukan stage agar panduan sinkron dengan navigasi user
-          if (tourStage === 'register') setTourStage('login');
-          else if (tourStage === 'login') setTourStage('diagnosis');
-          else if (tourStage === 'diagnosis') setTourStage('save');
-          else completeTour();
-        } else {
-          // Klik sembarang (background) -> Jangan ditutup (biarkan panduan tetap muncul)
-          // Sesuai permintaan: "yang panduan diagnosis itu jangan langsung hilang yaa tunggu pengguna klik dulu"
-        }
+      if (!tooltipRef.current) return;
+
+      // Klik di dalam tooltip -> jangan tutup
+      if (tooltipRef.current.contains(e.target as Node)) return;
+
+      const targetEl = document.querySelector(currentStep.target);
+      const fallbackEl = currentStep.fallbackTarget
+        ? document.querySelector(currentStep.fallbackTarget)
+        : null;
+
+      const clickedTarget =
+        targetEl?.contains(e.target as Node) ||
+        fallbackEl?.contains(e.target as Node);
+
+      // Pop-up hanya tertutup jika:
+      // - user klik tombol target (mis. "Mulai Tes" / tombol yang disorot), atau
+      // - (khusus step 3) user klik area kosong di luar kotak pop-up (backdrop)
+      if (clickedTarget || tourStage === 'diagnosis') {
+        advanceStage();
       }
     };
 
@@ -111,10 +121,8 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ currentPage }) =
 
     const updatePosition = () => {
       if (currentStep) {
-        // Coba cari target utama
         let found = getVisibleElement(currentStep.target, currentStep.requireInView);
-        
-        // Jika target utama tidak terlihat (misal disembunyikan dalam Hamburger Menu HP/Tablet), coba cari target fallback
+
         if (!found && currentStep.fallbackTarget) {
           found = getVisibleElement(currentStep.fallbackTarget, false);
         }
@@ -127,14 +135,11 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ currentPage }) =
       }
     };
 
-    // Beri sedikit jeda agar DOM selesai dirender
     const timer = setTimeout(updatePosition, 300);
-    
-    // Perbarui posisi saat scroll atau resize
+
     window.addEventListener('resize', updatePosition);
     window.addEventListener('scroll', updatePosition, true);
-    
-    // Interval fallback jika elemen muncul terlambat atau bergeser
+
     const interval = setInterval(updatePosition, 500);
 
     return () => {
@@ -148,11 +153,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ currentPage }) =
 
   const handleGotIt = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Majukan stage agar panduan di halaman ini tertutup dan menunggu halaman berikutnya
-    if (tourStage === 'register') setTourStage('login');
-    else if (tourStage === 'login') setTourStage('diagnosis');
-    else if (tourStage === 'diagnosis') setTourStage('save');
-    else completeTour();
+    advanceStage();
   };
 
   if (hasSeenTour || !currentStep || !targetRect) return null;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
 import { validateCommonEmailDomain } from "../utils/emailValidation";
-import { validatePhone12to13Digits } from "../utils/phoneValidation";
+import { validatePhone11to13Digits } from "../utils/phoneValidation";
 import { apiClient, getApiErrorMessage } from "../utils/apiClient";
 import { API_BASE_URL, BASE_URL } from "../utils/apiConfig";
 
@@ -710,7 +710,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
 
     const email = String(optimistic.email ?? "").trim();
 
-    const phoneValidation = validatePhone12to13Digits(optimistic.phone);
+    const phoneValidation = validatePhone11to13Digits(optimistic.phone);
     if (!phoneValidation.ok)
       return { ok: false, message: phoneValidation.message };
     const phone = phoneValidation.normalizedPhone;

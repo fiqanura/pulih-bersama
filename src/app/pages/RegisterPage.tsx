@@ -7,7 +7,7 @@ import { User, Mail, Phone, Lock, Loader, Eye, EyeOff, CircleCheck } from 'lucid
 import { toast } from 'sonner';
 import logo from '../../assets/logo_pulih_bersama.png';
 import { validateCommonEmailDomain } from '../utils/emailValidation';
-import { validatePhone12to13Digits } from '../utils/phoneValidation';
+import { validatePhone11to13Digits } from '../utils/phoneValidation';
 import { API_BASE_URL } from '../utils/apiConfig';
 
 interface RegisterPageProps {
@@ -34,7 +34,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
     const emailValidation = validateCommonEmailDomain(formData.email);
     if (!emailValidation.ok) newErrors.email = emailValidation.message;
 
-    const phoneValidation = validatePhone12to13Digits(formData.phone);
+    const phoneValidation = validatePhone11to13Digits(formData.phone);
     if (!phoneValidation.ok) newErrors.phone = phoneValidation.message;
     if (!formData.password) {
       newErrors.password = 'Kata sandi harus diisi';
@@ -193,6 +193,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
                 </button>
               </div>
               {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
+              <p className="text-sm text-gray-500">Kata Sandi (Min. 6 karakter)</p>
             </div>
 
             {/* Input Confirm Password */}
@@ -213,6 +214,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
                 </button>
               </div>
               {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword}</p>}
+              <p className="text-sm text-gray-500">Ulangi Kata Sandi</p>
             </div>
 
             <Button type="submit" className="w-full bg-gradient-to-r from-[#93c5fd] to-[#ddd6fe] text-[#1e3a8a]" disabled={isLoading}>
