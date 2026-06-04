@@ -211,7 +211,7 @@ const fetchSymptoms = async () => {
               <Input value={formData.text} onChange={(e) => setFormData({ ...formData, text: e.target.value })} placeholder="Deskripsi gejala" />
             </div>
             <div className="space-y-2">
-              <Label>Bobot Expert (0-1)</Label>
+              <Label>Bobot Pakar (0-1)</Label>
               <Input
                 type="number"
                 step="0.1"

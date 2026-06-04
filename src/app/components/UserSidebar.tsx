@@ -29,7 +29,7 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({ currentPage, onNavigat
           </div>
           <div>
             <h2 className="font-semibold text-gray-800">Pulih Bersama</h2>
-            <p className="text-xs text-gray-500">User Panel</p>
+            <p className="text-xs text-gray-500">Ruang Pengguna</p>
           </div>
         </div>
       </div>

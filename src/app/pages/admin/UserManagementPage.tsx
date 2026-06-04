@@ -81,7 +81,7 @@ export const UserManagementPage: React.FC = () => {
                 <TableHead>Nama</TableHead>
                 <TableHead>Telepon</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
+                <TableHead>Hak Akses</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>

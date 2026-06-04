@@ -18,16 +18,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
     setIsLoading(true);
 
-    const success = await login(email, password);
+    const result = await login(email, password);
 
-    if (success) {
+    if (result.ok) {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       toast.success(`Masuk berhasil! Selamat datang, ${user.name} 🌟`);
 
@@ -39,7 +39,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
         }
       }, 1000);
     } else {
-      setError('Email atau kata sandi salah.');
+      const nextErrors: { email?: string; password?: string; general?: string } = {};
+      if (result.fieldErrors?.email) nextErrors.email = result.fieldErrors.email;
+      if (result.fieldErrors?.password) nextErrors.password = result.fieldErrors.password;
+
+      // If backend provides only a generic message, show it as a general warning.
+      if (!nextErrors.email && !nextErrors.password) {
+        nextErrors.general = result.message || 'Email atau kata sandi salah.';
+      }
+
+      setErrors(nextErrors);
     }
 
     setIsLoading(false);
@@ -69,12 +78,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) setErrors((prev) => ({ ...prev, email: undefined, general: undefined }));
+                }}
                 placeholder="nama@gmail.com"
                 required
-                className="border-2 focus:border-[#93c5fd]"
+                className={`border-2 ${errors.email ? 'border-red-300' : 'focus:border-[#93c5fd]'}`}
                 disabled={isLoading}
               />
+              {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
             </div>
 
             <div className="space-y-2">
@@ -86,10 +99,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errors.password) setErrors((prev) => ({ ...prev, password: undefined, general: undefined }));
+                  }}
                   placeholder="Masukkan kata sandi"
                   required
-                  className="border-2 focus:border-[#93c5fd] pr-10"
+                  className={`border-2 pr-10 ${errors.password ? 'border-red-300' : 'focus:border-[#93c5fd]'}`}
                   disabled={isLoading}
                 />
                 <button
@@ -100,11 +116,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
             </div>
 
-            {error && (
+            {errors.general && (
               <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{error}</p>
+                <p className="text-sm text-red-600">{errors.general}</p>
               </div>
             )}
 

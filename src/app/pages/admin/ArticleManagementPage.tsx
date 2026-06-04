@@ -354,7 +354,7 @@ export const ArticleManagementPage: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label>Upload Thumbnail</Label>
+              <Label>Unggah Thumbnail</Label>
               {thumbnailPreviewUrl ? (
                 <div className="w-64 aspect-video rounded-md overflow-hidden border bg-gray-100">
                   <ImageWithFallback

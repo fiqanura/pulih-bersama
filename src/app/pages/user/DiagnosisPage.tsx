@@ -145,12 +145,12 @@ export const DiagnosisPage: React.FC<DiagnosisPageProps> = ({ onNavigate, onComp
       });
 
       if (response.ok) {
-        toast.success('Diagnosa berhasil dihitung!');
+        toast.success('Diagnosis berhasil dihitung!');
       } else {
-        console.error('Gagal simpan diagnosa. Status:', response.status);
+        console.error('Gagal simpan diagnosis. Status:', response.status);
       }
     } catch (error) {
-      console.error('Gagal simpan diagnosa (offline mode)', error);
+      console.error('Gagal simpan diagnosis (offline mode)', error);
     } finally {
       setIsLoading(false);
     }

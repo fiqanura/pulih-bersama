@@ -6,6 +6,7 @@ import { CheckCircle2 } from 'lucide-react';
 interface OnboardingTourProps {
   currentPage?: string;
   onNavigate?: (page: string) => void;
+  diagnosisCompleted?: boolean;
 }
 
 const TOUR_STEPS = [

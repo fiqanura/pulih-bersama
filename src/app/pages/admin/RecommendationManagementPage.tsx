@@ -156,7 +156,7 @@ export const RecommendationManagementPage: React.FC = () => {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
         <Input
           type="text"
-          placeholder="Cari judul, kategori, tipe, atau risk level..."
+          placeholder="Cari judul, kategori, tipe, atau tingkat risiko..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-10 border-2 focus:border-[#93c5fd]"
@@ -174,7 +174,7 @@ export const RecommendationManagementPage: React.FC = () => {
                 <TableHead>Ringkasan</TableHead>
                 <TableHead>Tipe</TableHead>
                 <TableHead>Kategori</TableHead>
-                <TableHead>Risk Level</TableHead>
+                <TableHead>Tingkat Risiko</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -202,7 +202,7 @@ export const RecommendationManagementPage: React.FC = () => {
                           rec.type === 'Article' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
                         }`}
                       >
-                        {rec.type}
+                        {rec.type === 'Article' ? 'Artikel' : rec.type}
                       </span>
                     </TableCell>
                     <TableCell className="whitespace-normal break-words">{rec.category}</TableCell>
@@ -265,7 +265,7 @@ export const RecommendationManagementPage: React.FC = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Article">Article</SelectItem>
+                    <SelectItem value="Article">Artikel</SelectItem>
                     <SelectItem value="Video">Video</SelectItem>
                   </SelectContent>
                 </Select>
@@ -321,11 +321,11 @@ export const RecommendationManagementPage: React.FC = () => {
                   placeholder={formData.type === 'Video' ? 'https://youtu.be/... atau https://...' : 'https://...'}
                 />
                 <p className="text-xs text-gray-500">
-                  Isi dengan URL sumber asli / video. Jangan isi dengan teks artikel panjang.
+                  Isi dengan URL sumber asli / video.
                 </p>
               </div>
               <div className="space-y-2">
-                <Label>Risk Level</Label>
+                <Label>Tingkat Risiko</Label>
                 <Select value={formData.risk_level} onValueChange={(value: 'Sedang' | 'Berat') => setFormData({ ...formData, risk_level: value })}>
                   <SelectTrigger>
                     <SelectValue />

@@ -104,7 +104,7 @@ export const UserHistoryPage: React.FC<UserHistoryPageProps> = ({ onNavigate }) 
       console.log('User Diagnoses Response:', data); // Debugging
       setDiagnoses(data);
     } catch (error) {
-      console.error('Gagal mengambil data diagnosa:', error);
+      console.error('Gagal mengambil data diagnosis:', error);
     }
   };
 
@@ -321,7 +321,7 @@ export const UserHistoryPage: React.FC<UserHistoryPageProps> = ({ onNavigate }) 
                         <div className="mt-4 pt-4 border-t">
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 bg-gray-50 rounded-xl">
                             <div>
-                              <p className="text-xs text-gray-500 uppercase font-bold">ID Diagnosa</p>
+                              <p className="text-xs text-gray-500 uppercase font-bold">ID Diagnosis</p>
                               <p className="font-semibold text-sm">{String(diagnosis.id)}</p>
                             </div>
                             <div>
@@ -399,7 +399,7 @@ export const UserHistoryPage: React.FC<UserHistoryPageProps> = ({ onNavigate }) 
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-[#1e3a8a] mb-2">Riwayat Pengguna</h1>
-        <p className="text-gray-600">Manajemen data dan pantauan hasil diagnosa</p>
+        <p className="text-gray-600">Manajemen data dan pantauan hasil diagnosis</p>
       </div>
 
       <div className="relative max-w-md">

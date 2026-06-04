@@ -22,6 +22,7 @@ export const RecommendationDetailPage: React.FC<RecommendationDetailPageProps> =
   const baseBackPage = (backPage ? String(backPage).split(':')[0] : '').trim();
   const handleBack = () => onNavigate(baseBackPage || 'admin-user-history');
   const sourceLabel = rec?.type === 'Video' ? 'Tonton Video' : 'Baca Sumber Asli';
+  const typeLabel = rec?.type === 'Article' ? 'Artikel' : rec?.type;
 
   if (!rec) {
     return (
@@ -71,7 +72,7 @@ export const RecommendationDetailPage: React.FC<RecommendationDetailPageProps> =
                 <span
                   className={`px-3 py-1 rounded-full ${rec.type === 'Article' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}
                 >
-                  {rec.type}
+                  {typeLabel}
                 </span>
               </div>
 

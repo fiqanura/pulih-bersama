@@ -35,6 +35,14 @@ export type Recommendation = {
   link: string;
 };
 
+export type RecommendationCreatePayload =
+  | FormData
+  | Omit<Recommendation, "id">;
+
+export type RecommendationUpdatePayload =
+  | FormData
+  | Partial<Omit<Recommendation, "id">>;
+
 export type CFResult = {
   category: string;
   score: number;
@@ -42,6 +50,17 @@ export type CFResult = {
 };
 
 export type RiskLevel = "Tidak Terindikasi" | "Ringan" | "Sedang" | "Berat";
+
+export type LoginResult =
+  | { ok: true }
+  | {
+      ok: false;
+      message: string;
+      fieldErrors?: {
+        email?: string;
+        password?: string;
+      };
+    };
 
 export type DiagnosisResult = {
   id: string;
@@ -68,7 +87,10 @@ export const AppContext = React.createContext({
   symptoms: [] as Symptom[],
   fetchUsers: async (): Promise<void> => {},
   fetchDiagnosisResults: async (_userId?: string): Promise<void> => {},
-  login: async (email: string, password: string): Promise<boolean> => false,
+  login: async (_email: string, _password: string): Promise<LoginResult> => ({
+    ok: false,
+    message: "Not implemented",
+  }),
   updateProfile: async (
     _data: Partial<User>,
   ): Promise<{ ok: true; user: User } | { ok: false; message: string }> => ({
@@ -88,8 +110,11 @@ export const AppContext = React.createContext({
   addSymptom: async (newSymptom: Omit<Symptom, "id">) => {},
   updateSymptom: (id: string, symptom: Partial<Symptom>) => {},
   deleteSymptom: (id: string) => {},
-  addRecommendation: (rec: Omit<Recommendation, "id">) => {},
-  updateRecommendation: (id: string, rec: Partial<Recommendation>) => {},
+  addRecommendation: async (_rec: RecommendationCreatePayload) => {},
+  updateRecommendation: async (
+    _id: string,
+    _rec: RecommendationUpdatePayload,
+  ) => {},
   deleteRecommendation: (id: string) => {},
   updateUserRole: async (
     _id: string,
@@ -452,6 +477,100 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     return null;
   };
 
+  const translateLoginMessageToFieldErrors = (
+    rawMessage: string,
+  ): { email?: string; password?: string; userNotRegistered?: boolean } => {
+    const msg = String(rawMessage ?? "").trim();
+    const lower = msg.toLowerCase();
+
+    // Generic invalid-credentials messages should NOT set both fields.
+    // We'll decide later via status code + email registration check.
+    const looksLikeGenericCredentials =
+      /email\s*(atau|and).*?(kata\s*sandi|password)/i.test(lower) ||
+      lower.includes("credentials") ||
+      lower.includes("do not match") ||
+      lower.includes("invalid credentials") ||
+      lower.includes("unauthorized");
+    if (looksLikeGenericCredentials) return {};
+
+    // Common backend phrasings.
+    if (
+      lower.includes("belum terdaftar") ||
+      lower.includes("not registered") ||
+      lower.includes("user not found") ||
+      lower.includes("not found") ||
+      lower.includes("no query results")
+    ) {
+      return { email: "Akun belum terdaftar, silahkan daftar terlebih dahulu.", userNotRegistered: true };
+    }
+
+    // If message explicitly mentions email or password, map it.
+    const mentionsEmail = lower.includes("email");
+    const mentionsPassword =
+      lower.includes("password") || lower.includes("kata sandi") || lower.includes("katasandi");
+
+    if (mentionsEmail && mentionsPassword) {
+      // If message explicitly blames both fields (rare), still prefer generic handling.
+      return {};
+    }
+    if (mentionsEmail) {
+      // Keep phrasing aligned with the requested UX.
+      return { email: "Email tidak sesuai." };
+    }
+    if (mentionsPassword) {
+      return { password: "Kata sandi tidak sesuai." };
+    }
+
+    return {};
+  };
+
+  const normalizeUsersFromAny = (input: unknown): User[] => {
+    if (Array.isArray(input)) return normalizeUsers(input);
+    if (input && typeof input === "object") {
+      const obj: any = input;
+      if (Array.isArray(obj.data)) return normalizeUsers(obj.data);
+      if (Array.isArray(obj.users)) return normalizeUsers(obj.users);
+    }
+    return [];
+  };
+
+  const checkEmailRegistered = async (email: string): Promise<boolean | null> => {
+    const trimmedEmail = String(email ?? "").trim();
+    if (!trimmedEmail) return null;
+
+    // Best-effort: some backends allow filtering by email; others return all users.
+    try {
+      const res = await apiClient.get("/users", {
+        params: { email: trimmedEmail },
+        headers: { Accept: "application/json" },
+      });
+
+      // If backend returns a single user object.
+      const single: any = res.data?.user ?? res.data?.data?.user ?? res.data?.data ?? res.data;
+      if (single && typeof single === "object" && !Array.isArray(single)) {
+        const singleEmail = String((single as any).email ?? "").trim().toLowerCase();
+        if (singleEmail) return singleEmail === trimmedEmail.toLowerCase();
+      }
+
+      const list = normalizeUsersFromAny(res.data);
+      if (list.length === 0) return false;
+      return list.some((u) => u.email.toLowerCase() === trimmedEmail.toLowerCase());
+    } catch {
+      // Fallback without axios (in case interceptors/auth cause issues)
+      try {
+        const url = `${API_BASE_URL}/users?email=${encodeURIComponent(trimmedEmail)}`;
+        const resp = await fetch(url, { method: "GET", headers: { Accept: "application/json" } });
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        const list = normalizeUsersFromAny(data);
+        if (list.length === 0) return false;
+        return list.some((u) => u.email.toLowerCase() === trimmedEmail.toLowerCase());
+      } catch {
+        return null;
+      }
+    }
+  };
+
   // Restore logged-in user on refresh
   useEffect(() => {
     const raw = localStorage.getItem("user");
@@ -616,7 +735,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     fetchRecs();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<LoginResult> => {
     try {
       const res = await apiClient.post(
         "/login",
@@ -659,10 +778,77 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         }
       }
 
-      return true;
+      return { ok: true };
     } catch (error) {
       console.error("Error connecting to server:", error);
-      return false;
+
+      const err: any = error as any;
+      const status = err?.response?.status;
+      const data = err?.response?.data;
+
+      // If backend sends Laravel-style errors, surface them per-field.
+      const laravelErrors = data?.errors;
+      const fieldErrors: { email?: string; password?: string } = {};
+      if (laravelErrors && typeof laravelErrors === "object") {
+        const emailErr = (laravelErrors as any)?.email;
+        const passErr = (laravelErrors as any)?.password;
+
+        const pick = (v: any): string | null => {
+          if (Array.isArray(v) && typeof v[0] === "string") return v[0];
+          if (typeof v === "string") return v;
+          return null;
+        };
+
+        const rawEmail = pick(emailErr);
+        const rawPass = pick(passErr);
+        if (rawEmail) fieldErrors.email = rawEmail;
+        if (rawPass) fieldErrors.password = rawPass;
+      }
+
+      const rawMessage =
+        getFirstLaravelValidationError(data) ||
+        getApiErrorMessage(error) ||
+        "Gagal masuk.";
+
+      // Map common messages into field errors if backend doesn't provide structured errors.
+      if (!fieldErrors.email && !fieldErrors.password) {
+        const mapped = translateLoginMessageToFieldErrors(rawMessage);
+        if (mapped.email) fieldErrors.email = mapped.email;
+        if (mapped.password) fieldErrors.password = mapped.password;
+
+        // Distinguish email-not-registered vs wrong password.
+        // Desired UX:
+        // - Email terdaftar tapi login gagal => error hanya password
+        // - Email tidak terdaftar => error hanya email (akun belum terdaftar)
+        // Only run when we still don't have a specific field error.
+        if (!fieldErrors.email && !fieldErrors.password) {
+          // If backend clearly indicates missing user.
+          if (status === 404) {
+            fieldErrors.email = "Akun belum terdaftar, silahkan daftar terlebih dahulu.";
+          } else if (status === 401 || status === 422 || status === 400) {
+            const registered = await checkEmailRegistered(email);
+            if (registered === true) {
+              fieldErrors.password = "Kata sandi tidak sesuai.";
+            } else if (registered === false) {
+              fieldErrors.email = "Akun belum terdaftar, silahkan daftar terlebih dahulu.";
+            }
+          }
+        }
+      }
+
+      // If we still can't know which field, show a general error (avoid flagging both fields).
+      if (!fieldErrors.email && !fieldErrors.password) {
+        return {
+          ok: false,
+          message: rawMessage || "Email atau kata sandi salah.",
+        };
+      }
+
+      return {
+        ok: false,
+        message: rawMessage,
+        fieldErrors,
+      };
     }
   };
 

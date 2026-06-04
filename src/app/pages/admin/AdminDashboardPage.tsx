@@ -66,7 +66,7 @@ const AdminDashboardPage: React.FC = () => {
         labels: monthLabels,
         datasets: [
           {
-            label: 'Jumlah Diagnosa',
+            label: 'Jumlah Diagnosis',
             data: normalizedValues,
             borderColor: 'rgba(75, 192, 192, 1)',
             backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -172,7 +172,7 @@ const AdminDashboardPage: React.FC = () => {
     <div className="p-4 sm:p-6 lg:p-8 space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard Admin</h1>
-        <p className="text-gray-600">Selamat datang di panel administrasi Pulih Bersama</p>
+        <p className="text-gray-600">Selamat datang di panel admin Pulih Bersama</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -237,7 +237,7 @@ const AdminDashboardPage: React.FC = () => {
       </div>
       <div className="diagnosis-container" style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-800">Tren Jumlah Diagnosa per Bulan</h3>
+          <h3 className="text-xl font-semibold text-gray-800">Tren Jumlah Diagnosis per Bulan</h3>
           <select
             value={selectedYear}
             onChange={handleYearChange}
@@ -262,14 +262,14 @@ const AdminDashboardPage: React.FC = () => {
                 },
                 title: {
                   display: true,
-                  text: `Tren Jumlah Diagnosa per Bulan (${selectedYear})`,
+                  text: `Tren Jumlah Diagnosis per Bulan (${selectedYear})`,
                 },
                 tooltip: {
                   callbacks: {
                     label: (context) => {
                       const label = context.label ?? '';
                       const value = Number(context.parsed?.y ?? context.raw ?? 0);
-                      return `Jumlah Diagnosa (${label}): ${value}`;
+                      return `Jumlah Diagnosis (${label}): ${value}`;
                     },
                     footer: () => {
                       const values = Array.isArray((diagnosisData as any)?.datasets?.[0]?.data)

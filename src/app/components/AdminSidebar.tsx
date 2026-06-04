@@ -31,7 +31,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentPage, onNavig
           </div>
           <div>
             <h2 className="font-semibold text-gray-800">Pulih Bersama</h2>
-            <p className="text-xs text-gray-500">Admin Panel</p>
+            <p className="text-xs text-gray-500">Panel Admin</p>
           </div>
         </div>
       </div>
@@ -43,8 +43,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentPage, onNavig
             <Shield className="w-6 h-6 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-800 truncate">{user?.name || 'Administrator'}</p>
-            <p className="text-xs text-[#5b21b6] font-medium">Administrator</p>
+            <p className="font-semibold text-gray-800 truncate">{user?.name || 'Admin'}</p>
+            <p className="text-xs text-[#5b21b6] font-medium">Admin</p>
           </div>
         </div>
       </div>

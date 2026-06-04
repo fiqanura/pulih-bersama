@@ -199,7 +199,7 @@ const AppContent: React.FC = () => {
 
     return (
       <SidebarProvider defaultOpen>
-      <OnboardingTour currentPage={currentPage} diagnosisCompleted={!!diagnosisResult} />
+      <OnboardingTour currentPage={currentPage} />
         <Sidebar>
           <UserSidebar currentPage={currentPage} onNavigate={handleNavigate} />
         </Sidebar>

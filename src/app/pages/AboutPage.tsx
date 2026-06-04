@@ -33,10 +33,9 @@ export const AboutPage: React.FC = () => {
                   kesulitan dalam penyesuaian sosial.
                 </p>
                 <p>
-                  <strong>Pulih Bersama</strong> hadir sebagai solusi untuk memberikan deteksi dini 
-                  terhadap kondisi kesehatan mental anak yang terdampak perceraian. 
-                  Kami menggunakan metode <strong>Certainty Factor</strong> untuk menghitung tingkat keyakinan diagnosis 
-                  dan sistem akan memberikan rekomendasi yang sesuai dengan kondisi pengguna.
+                  <strong>Pulih Bersama</strong> hadir sebagai solusi deteksi dini untuk menjembatani penanganan awal dari dampak tersebut. 
+                  Melalui evaluasi, sistem kami akan membantumu memahami kondisi emosional saat ini dan menampilkan 
+                  rekomendasi pemulihan mandiri yang paling sesuai untuk menemani proses penyembuhanmu
                 </p>
               </div>
             </CardContent>

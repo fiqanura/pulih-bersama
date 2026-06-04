@@ -84,7 +84,7 @@ export const DiagnosisResultPage: React.FC<DiagnosisResultPageProps> = ({ result
       <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto text-center">
         <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
         <h1 className="text-2xl font-bold text-gray-800">Data Tidak Tersedia</h1>
-        <p className="text-gray-500">Hasil diagnosis tidak ditemukan. Silakan coba lagi.</p>
+          <p className="text-gray-500">Hasil diagnosis tidak ditemukan. Silakan coba lagi.</p>
         <Button onClick={() => onNavigate('user-dashboard')} className="mt-4">Kembali ke Beranda</Button>
       </div>
     );
@@ -158,7 +158,7 @@ export const DiagnosisResultPage: React.FC<DiagnosisResultPageProps> = ({ result
             <h4 className="font-bold italic">Peringatan Penting</h4>
           </div>
           <p className="text-sm text-gray-700 leading-relaxed">
-            Hasil ini didasarkan pada perhitungan algoritma sistem "Pulih Bersama" dan bukan pengganti diagnosa medis profesional.
+            Hasil ini didasarkan pada perhitungan algoritma sistem "Pulih Bersama" dan bukan pengganti diagnosis medis profesional.
             <br />
             Jika skor menunjukkan tingkat <strong>Sedang</strong> atau <strong>Berat</strong>, kami sangat menyarankan Anda untuk menjangkau bantuan profesional.
             <br />
