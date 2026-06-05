@@ -9,6 +9,7 @@ import { Plus, Pencil, Trash, Save, X, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import { Tooltip, TooltipTrigger, TooltipContent } from '../../components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { ImageWithFallback } from '../../components/figma/ImageWithFallback';
 
@@ -209,17 +210,31 @@ export const RecommendationManagementPage: React.FC = () => {
                     <TableCell>{rec.risk_level}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
-                        <Button size="sm" variant="outline" onClick={() => handleOpenDialog(rec)}>
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDelete(rec.id)}
-                          className="text-red-600 hover:bg-red-50"
-                        >
-                          <Trash className="w-4 h-4" />
-                        </Button>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button size="sm" variant="outline" onClick={() => handleOpenDialog(rec)}>
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <span>Edit</span>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDelete(rec.id)}
+                              className="text-red-600 hover:bg-red-50"
+                            >
+                              <Trash className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <span>Hapus</span>
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
                     </TableCell>
                   </TableRow>

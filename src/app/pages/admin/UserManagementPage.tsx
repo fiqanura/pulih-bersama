@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/button';
 import { useApp } from '../../context/AppContext';
 import { Shield, User, Search, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Tooltip, TooltipTrigger, TooltipContent } from '../../components/ui/tooltip';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Input } from '../../components/ui/input';
 import {
@@ -127,14 +128,23 @@ export const UserManagementPage: React.FC = () => {
 
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button
-                              size="icon"
-                              variant="outline"
-                              aria-label={`Hapus akun ${user.name}`}
-                              className="border-destructive/30 text-destructive hover:bg-destructive/10"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            <span>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="outline"
+                                    aria-label={`Hapus akun ${user.name}`}
+                                    className="border-destructive/30 text-destructive hover:bg-destructive/10"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <span>Hapus</span>
+                                </TooltipContent>
+                              </Tooltip>
+                            </span>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
