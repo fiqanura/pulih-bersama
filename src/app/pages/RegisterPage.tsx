@@ -85,7 +85,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
         const phoneError =
           Array.isArray(errorsObj?.phone) ? errorsObj.phone[0] : errorsObj?.phone;
 
-        const translateError = (msg) => {
+        const translateError = (msg: any) => {
           const l = String(msg).toLowerCase();
           if (l.includes('email has already been taken')) return 'Email ini sudah terdaftar.';
           if (l.includes('phone has already been taken') || l.includes('phone number has already been taken') || l.includes('telepon')) return 'Nomor telepon ini sudah terdaftar.';

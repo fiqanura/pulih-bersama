@@ -5,7 +5,7 @@
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "moduleResolution": "bundler",
-    "ignoreDeprecations": "6.0",
+    "ignoreDeprecations": "5.0",
     "strict": true,
     "skipLibCheck": true,
     "baseUrl": "./",
@@ -15,5 +15,5 @@
   },
   "include": ["src"],
   "exclude": ["node_modules"],
-  "types": ["node"]
+  "types": ["node", "vite/client"]
 }
